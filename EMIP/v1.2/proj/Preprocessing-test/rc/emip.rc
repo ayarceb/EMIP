@@ -1,0 +1,178 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!
+!!! EMIP - EMEP Input Processor
+!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+!----------------------------------------------------------
+! main
+!----------------------------------------------------------
+
+! module and class:
+emip.class        :  emip.EmipTaskList
+emip.args         :  '%{rcfile}'
+
+!
+! Provide list of tasks to be perfomed.
+! Currently configured:
+!  - omi   : download and convert OMI data
+!
+!emip.tasks        :  omi tropomi
+!
+!~ testing one by one ...
+!emip.tasks        :  omi
+emip.tasks        :  tropomi
+
+
+
+!----------------------------------------------------------
+! work dir
+!----------------------------------------------------------
+
+! define scratch directory,
+! might be host depended:
+!SCRATCH                       :  ${HOME}/scratch
+!SCRATCH                       :   /run/media/dirac/Datos/TROPOMI
+
+
+!----------------------------------------------------------
+! timerange
+!----------------------------------------------------------
+
+! timerange:
+my.timerange.start              :  2018-07-01 00:00
+my.timerange.end                :  2018-07-10 23:59
+
+
+!----------------------------------------------------------
+! domain and grid settings
+!----------------------------------------------------------
+
+!~ domain name, used in download and convert directories:
+!my.region                       :  MACC         ! LE validation runs
+!my.region                       :  NLD-GER
+my.region 			 :  NLD
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#if "${my.region}" == "MACC"
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+!~ defined in lotos-euros-regions.rc:
+my.region.west                  :   -15.0
+my.region.east                  :    35.0
+my.region.south                 :    35.0
+my.region.north                 :    70.0
+
+!~ regrid to ~25 km:
+my.region.grid                  :  ${my.region}_050x025
+!~ resolution in degrees:
+my.region.dlon                  :   0.50
+my.region.dlat                  :   0.25
+
+! figure size of maps for this region, 
+! None for default:
+my.figsize                      :   None
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#elif "${my.region}" == "NLD"
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+!~ defined in lotos-euros-regions.rc:
+my.region.west                  :    3
+my.region.east                  :    8
+my.region.south                 :    50
+my.region.north                 :    54
+
+!~ regrid to ~25 km:
+my.region.grid                  :  ${my.region}_010x005
+!~ resolution in degrees:
+my.region.dlon                  :   0.1
+my.region.dlat                  :   0.05
+
+! figure size of maps for this region, 
+! None for default:
+my.figsize                      :   None
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#elif "${my.region}" == "NLD-GER"
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+!~ box same as used for IASI NH3:
+my.region.west                  :     2.0
+my.region.east                  :    16.0
+my.region.south                 :    47.0
+my.region.north                 :    56.0
+
+!~ regrid to CAMS/REG emission resolution
+! name used for regridding:
+my.region.grid                  :  ${my.region}_010x005
+!~ resolution in degrees:
+my.region.dlon                  :   0.10
+my.region.dlat                  :   0.05
+
+! figure size of maps for this region, 
+! None for default:
+my.figsize                      :   None
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#else
+#error unsupported my.region "${my.region}"
+#endif
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+!----------------------------------------------------------
+! user information
+!----------------------------------------------------------
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#if "${USER}" == "segersaj"
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! Attributes written to output files.
+my.attr.author                  :  Arjo Segers
+my.attr.institution             :  TNO, Utrecht, The Netherlands
+my.attr.email                   :  Arjo.Segers@tno.nl
+
+! scratch dir:
+my.scratch                      :  ${SCRATCH}/EMIP
+
+! storage for downloaded observations:
+my.observations                 :  ${OBSERVATIONS}
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#elif "${USER}" == "zijlkertd"
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! Attributes written to output files.
+my.attr.author                  :  Tammo Zijlker
+my.attr.institution             :  TNO, Utrecht, The Netherlands
+my.attr.email                   :  tammo.zijlker@tno.nl
+
+! scratch dir:
+my.scratch                      :  ${SCRATCH}/EMIP
+
+! storage for downloaded observations:
+my.observations                 :  ${OBSERVATIONS}
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#else
+#error unsupported USER "${USER}"
+#endif
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+!----------------------------------------------------------
+! detailed settings
+!----------------------------------------------------------
+
+!#include emip_omi.rc
+
+#include emip_tropomi.rc
+
+
+!----------------------------------------------------------
+! end
+!----------------------------------------------------------

@@ -1,0 +1,11 @@
+tener en cuenta con el time range de no pasar mas de 1 mes, debido a que hay un bug al quedar m diferente al hacer la tarea posterior por ejemplo el convert catalogue. Hacer estudios solo de mes
+
+Aquí estan los archivos que funcionan:
+
+/run/media/dirac/Datos/New_EMIP_TAMMO/EMIP/v1.2/proj/lotos-euros/rc
+
+
+Para lanzarlo se debe utilizar el siguiente comando:
+
+./bin/emip  proj/lotos-euros/rc/emip.rc
+

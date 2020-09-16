@@ -1,0 +1,8 @@
+
+# settings:
+rcfile='proj/lotos-euros/rc/emip.rc'
+
+# run:
+./bin/emip ${rcfile}
+#hopjob --job-name=emip --mem=4Gb "./bin/emip ${rcfile}" --submit
+

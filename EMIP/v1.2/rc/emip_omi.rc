@@ -1,0 +1,517 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!
+!!! EMIP - EMEP Input Processor
+!!!
+!!! Processing of OMI data:
+!!!  - download original data files
+!!!  - convert to netcdf format
+!!!  - sample on regular grid
+!!!  - create catalogue of figures
+!!!
+!!! This file is included in "emip.rc".
+!!! The following keywords are already defined:
+!!!
+!!!  ! timerange settings:
+!!!  my.timerange.start
+!!!  my.timerange.end
+!!!
+!!!  ! region settings:
+!!!  my.region
+!!!  my.region.west
+!!!  my.region.east
+!!!  my.region.south
+!!!  my.region.north
+!!!
+!!!  ! regular grid:
+!!!  my.region.grid
+!!!  my.region.dlon
+!!!  my.region.dlat
+!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+!-------------------------------------------------
+! omi
+!-------------------------------------------------
+
+! taks to be performed:
+emip.omi.class        :  emip.EmipTaskList
+emip.omi.args         :  '%{rcfile}'
+
+! task list:
+!emip.omi.tasks        :  download convert convert-catalogue regrid regrid-catalogue
+
+!! testing one-by-one ...
+!emip.omi.tasks        :  download
+!emip.omi.tasks        :  convert
+!emip.omi.tasks        :  convert-catalogue
+!emip.omi.tasks        :  regrid
+!emip.omi.tasks        :  regrid-catalogue
+emip.omi.tasks        :  convert convert-catalogue regrid regrid-catalogue
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! product description
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! subdir:
+my.temis.omi.dir                    :  airpollution/no2col/data/omi
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! omi download
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! use UTOPyA class for download:
+emip.omi.download.class                 :  utopya.UtopyaInstall
+emip.omi.download.args                  :  '%{rcfile}'
+
+! 
+! OMI archive on TEMIS:
+!   http://temis.nl/airpollution/no2col/data/omi/data_v2/2012/omi_no2_he5_20120101.tar
+!
+
+! data sets to be installed:
+emip.omi.download.sets                  :  data_v2
+
+! target directory:
+emip.omi.download.data_v2.dir           :  ${SCRATCH}/TEMIS/${my.temis.omi.dir}/data_v2
+
+! install files per day:
+emip.omi.download.data_v2.timerange     :  ${my.timerange.start} to ${my.timerange.end} by 1 day
+
+! download from:
+emip.omi.download.data_v2.arch          :  http://temis.nl/${my.temis.omi.dir}/data_v2
+! filenames:
+emip.omi.download.data_v2.files         :  %Y/omi_no2_he5_%Y%m%d.tar
+
+! debug ...
+emip.omi.download.data_v2.verbose       :  True
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! omi conversion
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! 
+! Extract subset from OMI (or similar) sattelite data.
+!
+! Input files are in HDF(EOS)5.
+! Assumed structure:
+! 
+!   /HDFEOS
+!          /SWATHS
+!                 /<swathgroup>
+!                             /Data Fields
+!                                                /<component>RetrievalVerticalColumn
+!                                                   .title
+!                                                   .units
+!                                                /...
+!                             /Geolocation Fields
+!                                                /Latitude
+!                                                /Longitude
+!                                                /...
+!
+! Input filters
+!
+!   Filters can be applied on input to select a subset of the pixels only.
+!   Specifiy a list of filter names.
+!   For each name, specify the variable which values are used for testing,
+!   the type test, and eventually some thresholds or other settings for this type.
+!   The units of the thresholds should match with the units in the variables,
+!   the expected units have to be defined too.
+!   The examples below show possible types and their settings.
+!
+
+! task initialization:
+emip.omi.convert.class                  :  emip_omi.EmipOmiConvert
+emip.omi.convert.args                   :  '%{rcfile}'
+
+! time range:
+emip.omi.convert.timerange.start        :  ${my.timerange.start}
+emip.omi.convert.timerange.end          :  ${my.timerange.end}
+
+!
+! input files
+!
+
+! input directory:
+emip.omi.convert.files.dir                      :  ${SCRATCH}/TEMIS/${my.temis.omi.dir}/data_v2/%Y
+
+! filename parts:
+emip.omi.convert.files.project                  :  OMI-Aura
+emip.omi.convert.files.product                  :  L2-OMDOMINO
+
+! target component:
+emip.omi.convert.component                      :  NO2
+
+! group name:
+emip.omi.convert.data.swathgroup                :  Domino${emip.omi.convert.component}
+
+! name of column product:
+emip.omi.convert.data.column                    :  TroposphericVerticalColumn
+
+! renew existing files?
+emip.omi.convert.renew                          :  True
+
+! wait for certain file to continue ?
+! leave emtpy for start from begin:
+emip.omi.convert.wait.for                       : 
+
+! adhoc: skip some problematic files:
+emip.omi.convert.skip                           :  
+ 
+
+!
+! Filters:
+!
+! * The 'tcflag' test on 'TroposphericColumnFlag' implies only not-too-cloudy pixels using:
+!     CloudRadianceFraction <= 50 %
+!
+!~ used by KNMI for CAMS50 subset:
+emip.omi.convert.filters                        :  lons lats valid tcflag albedo
+
+! filter settings:
+emip.omi.convert.filter.lons.var                :  Geolocation Fields/Longitude
+emip.omi.convert.filter.lons.units              :  deg
+emip.omi.convert.filter.lons.type               :  minmax
+emip.omi.convert.filter.lons.minmax             :  ${my.region.west} ${my.region.east}
+
+! filter settings:
+emip.omi.convert.filter.lats.var                :  Geolocation Fields/Latitude
+emip.omi.convert.filter.lats.units              :  deg
+emip.omi.convert.filter.lats.type               :  minmax
+emip.omi.convert.filter.lats.minmax             :  ${my.region.south} ${my.region.north}
+
+! filter settings:
+emip.omi.convert.filter.valid.var               :  Data Fields/${emip.omi.convert.data.column}
+emip.omi.convert.filter.valid.type              :  valid
+
+! filter settings:
+emip.omi.convert.filter.tcflag.var              :  Data Fields/TroposphericColumnFlag
+emip.omi.convert.filter.tcflag.type             :  equal
+emip.omi.convert.filter.tcflag.value            :  0
+
+! filter settings:
+emip.omi.convert.filter.albedo.var              :  Data Fields/SurfaceAlbedo
+emip.omi.convert.filter.albedo.units            :  1
+emip.omi.convert.filter.albedo.type             :  max
+emip.omi.convert.filter.albedo.max              :  0.3
+
+! max 50% of cloud radiance allowed:
+emip.omi.convert.filter.cloudradiance.var       :  Data Fields/CloudRadianceFraction
+emip.omi.convert.filter.cloudradiance.units     :  %
+emip.omi.convert.filter.cloudradiance.type      :  max
+emip.omi.convert.filter.cloudradiance.max       :  50.0
+
+
+!
+! output files
+!
+
+! output directory:
+emip.omi.convert.output.dir                     :  ${SCRATCH}/OMI/NO2/${my.region}/%Y/%m
+
+
+! filename template:
+emip.omi.convert.output.filename                :  ${emip.omi.convert.files.project}_${emip.omi.convert.component}_%Y%m%d_%{orbit}.nc
+
+! global attributes:
+emip.omi.convert.output.attrs               :  format Conventions \
+                                                 author institution email
+
+!
+emip.omi.convert.output.attr.format         :  1.0
+!
+emip.omi.convert.output.attr.Conventions    :  CF-1.6
+!
+emip.omi.convert.output.attr.author         :  ${my.attr.author}
+emip.omi.convert.output.attr.institution    :  ${my.attr.institution}
+emip.omi.convert.output.attr.email          :  ${my.attr.email}
+
+!
+! track attributes
+!
+
+! attributtes to be copied from the original tracks ;
+! written to global attributes with the track number:
+!    track_01_NumTimes
+!             :
+emip.omi.convert.output.track_attrs                     :
+
+!
+! variables
+!
+
+! which fields to be put out ?
+emip.omi.convert.output.vars        :  longitude corner_longitudes \
+                                       latitude corner_latitudes \
+                                       layer time \
+                                       vcd_trop sigma_vcd_trop sigma_vcd_trop_ak \
+                                       kernel \
+                                       pressure_levels \
+                                       cloud_top_pressure \
+                                       cloud_fraction cloud_radiance_fraction \
+                                       image_number pixel_number \
+                                       tropopause_layer \
+                                       surface_pressure hyam hybm hyai hybi \
+                                       orbit_number \
+                                       track_longitude track_corner_longitudes \
+                                       track_latitude  track_corner_latitudes \
+                                       pixel
+
+! description:
+emip.omi.convert.output.var.longitude.from                  :   Geolocation Fields/Longitude
+emip.omi.convert.output.var.longitude.units                 :   degrees_east
+
+! description:
+emip.omi.convert.output.var.corner_longitudes.from          :   Geolocation Fields/LongitudeCornerpoints
+emip.omi.convert.output.var.corner_longitudes.units         :   degrees_east
+
+! description:
+emip.omi.convert.output.var.latitude.from                   :   Geolocation Fields/Latitude
+emip.omi.convert.output.var.latitude.units                  :   degrees_north
+
+! description:
+emip.omi.convert.output.var.corner_latitudes.from           :   Geolocation Fields/LatitudeCornerpoints
+emip.omi.convert.output.var.corner_latitudes.units          :   degrees_north
+
+! "Datetime" is a conversion of the original "Time" values
+! into python 'datetime' objects ; use this to convert to 6-number values:
+emip.omi.convert.output.var.time.from                       :   Geolocation Fields/Datetime
+emip.omi.convert.output.var.time.units                      :   __native__
+!emip.omi.convert.output.var.time.special                    :   time
+  
+! description:
+emip.omi.convert.output.var.vcd_trop.from                   :   Data Fields/${emip.omi.convert.data.column}
+emip.omi.convert.output.var.vcd_trop.units                  :   1e15 cm**-2
+
+! description:
+emip.omi.convert.output.var.sigma_vcd_trop.from             :   Data Fields/${emip.omi.convert.data.column}Error
+emip.omi.convert.output.var.sigma_vcd_trop.units            :   1e15 cm**-2
+
+! description:
+emip.omi.convert.output.var.sigma_vcd_trop_ak.from          :   Data Fields/VCDTropErrorUsingAvKernel
+emip.omi.convert.output.var.sigma_vcd_trop_ak.units         :   1e15 cm**-2
+
+! description:
+emip.omi.convert.output.var.kernel.special                  :   kernel_trop
+emip.omi.convert.output.var.kernel.avk                      :   Data Fields/AveragingKernel
+emip.omi.convert.output.var.kernel.amf                      :   Data Fields/AirMassFactor
+emip.omi.convert.output.var.kernel.amft                     :   Data Fields/AirMassFactorTropospheric
+emip.omi.convert.output.var.kernel.troplayer                :   Data Fields/TM4TropoPauseLevel
+emip.omi.convert.output.var.kernel.units                    :   1
+
+! layer definition:
+emip.omi.convert.output.var.layer.special                   :   hyblevel
+emip.omi.convert.output.var.layer.ap                        :   hyam
+emip.omi.convert.output.var.layer.b                         :   hybm
+emip.omi.convert.output.var.layer.ps                        :   hybm
+emip.omi.convert.output.var.layer.units                     :   1
+
+! layer with tropopause:
+emip.omi.convert.output.var.tropopause_layer.from           :   Data Fields/TM4TropoPauseLevel
+emip.omi.convert.output.var.tropopause_layer.units          :   1
+
+! surface pressure:
+emip.omi.convert.output.var.surface_pressure.from           :   Data Fields/TM4SurfacePressure
+emip.omi.convert.output.var.surface_pressure.units          :   Pa
+
+! hybride coeff at mid levels:
+emip.omi.convert.output.var.hyam.from                       :   Data Fields/TM4PressurelevelA
+emip.omi.convert.output.var.hyam.units                      :   Pa
+emip.omi.convert.output.var.hybm.from                       :   Data Fields/TM4PressurelevelB
+emip.omi.convert.output.var.hybm.units                      :   1
+
+! hybride coeff at interface levels:
+emip.omi.convert.output.var.hyai.special                    :   hym_to_hyi
+emip.omi.convert.output.var.hyai.from                       :   Data Fields/TM4PressurelevelA
+emip.omi.convert.output.var.hyai.units                      :   Pa
+emip.omi.convert.output.var.hybi.special                    :   hym_to_hyi
+emip.omi.convert.output.var.hybi.from                       :   Data Fields/TM4PressurelevelB
+emip.omi.convert.output.var.hybi.units                      :   1
+
+! Convert from surface pressure and mid-level hybride coefficients to 3D pressure levels
+emip.omi.convert.output.var.pressure_levels.special         :   hym_to_pressure
+emip.omi.convert.output.var.pressure_levels.sp              :   Data Fields/TM4SurfacePressure
+emip.omi.convert.output.var.pressure_levels.hyam            :   Data Fields/TM4PressurelevelA
+emip.omi.convert.output.var.pressure_levels.hybm            :   Data Fields/TM4PressurelevelB
+emip.omi.convert.output.var.pressure_levels.units           :   Pa
+
+! description:
+emip.omi.convert.output.var.cloud_top_pressure.from         :   Data Fields/CloudPressure
+emip.omi.convert.output.var.cloud_top_pressure.units        :   hPa
+
+! description:
+emip.omi.convert.output.var.cloud_fraction.from             :   Data Fields/CloudFraction
+emip.omi.convert.output.var.cloud_fraction.units            :   1
+
+! description:
+emip.omi.convert.output.var.cloud_radiance_fraction.from    :   Data Fields/CloudRadianceFraction
+emip.omi.convert.output.var.cloud_radiance_fraction.units   :   %
+
+! for traceback:
+emip.omi.convert.output.var.orbit_number.special            :   orbit_number
+emip.omi.convert.output.var.orbit_number.units              :   1
+
+! for traceback:
+emip.omi.convert.output.var.image_number.special            :   scan_number
+emip.omi.convert.output.var.image_number.units              :   1
+
+! for traceback:
+emip.omi.convert.output.var.pixel_number.special            :   pixel_number
+emip.omi.convert.output.var.pixel_number.units              :   1
+
+! original track:
+!~ center lon
+emip.omi.convert.output.var.track_longitude.from            :   Geolocation Fields/Longitude
+emip.omi.convert.output.var.track_longitude.units           :   degrees_east
+emip.omi.convert.output.var.track_longitude.special         :   track_longitude
+!~ center lat
+emip.omi.convert.output.var.track_latitude.from             :   Geolocation Fields/Latitude
+emip.omi.convert.output.var.track_latitude.units            :   degrees_north
+emip.omi.convert.output.var.track_latitude.special          :   track_latitude
+!~ corner lons
+emip.omi.convert.output.var.track_corner_longitudes.from    :   Geolocation Fields/LongitudeCornerpoints
+emip.omi.convert.output.var.track_corner_longitudes.units   :   degrees_east
+emip.omi.convert.output.var.track_corner_longitudes.special :   track_corner_longitudes
+!~ corner lats
+emip.omi.convert.output.var.track_corner_latitudes.from     :   Geolocation Fields/LatitudeCornerpoints
+emip.omi.convert.output.var.track_corner_latitudes.units    :   degrees_north
+emip.omi.convert.output.var.track_corner_latitudes.special  :   track_corner_latitudes
+! compression index:
+emip.omi.convert.output.var.pixel.units                     :   1
+emip.omi.convert.output.var.pixel.special                   :   compress="track_image track_pixel"
+
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! omi regrid
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! task initialization:
+emip.omi.regrid.class                  :  emip_satx.EmipSatxRegrid
+emip.omi.regrid.args                   :  '%{rcfile}'
+
+! time range:
+emip.omi.regrid.timerange.start        :  ${my.timerange.start}
+emip.omi.regrid.timerange.end          :  ${my.timerange.end}
+
+! input directory for OMI netcdf files, 
+! might include time templates:
+emip.omi.regrid.input.dir              :  ${SCRATCH}/OMI/NO2/${my.region}/%Y/%m
+! filename filter:
+emip.omi.regrid.input.filenames        :  OMI-Aura_NO2_*.nc
+
+! target directory including time templates:
+emip.omi.regrid.output.dir             :  ${SCRATCH}/OMI/NO2/${my.region.grid}/%Y/%m
+! target filenames;
+! time will be whole hour nearest to
+! the average of sample times on track:
+emip.omi.regrid.output.filename        :  OMI-Aura_NO2_%Y%m%d_%H%M.nc
+
+! re-create gridded files?
+emip.omi.regrid.output.renew           :  True
+
+! overwrite existing files?
+! error is raised if file is present already:
+emip.omi.regrid.output.overwrite       :  False
+
+! regular target grid:
+!~ resolution in degrees:
+emip.omi.regrid.grid.dlon              :  ${my.region.dlon}
+emip.omi.regrid.grid.dlat              :  ${my.region.dlat}
+!~ bounding box:
+emip.omi.regrid.grid.west              :  ${my.region.west}
+emip.omi.regrid.grid.east              :  ${my.region.east}
+emip.omi.regrid.grid.south             :  ${my.region.south}
+emip.omi.regrid.grid.north             :  ${my.region.north}
+
+! load mapping file if present?
+emip.omi.regrid.mapping.load           :  True
+! creating mapping file?
+emip.omi.regrid.mapping.store          :  True
+! target directory:
+emip.omi.regrid.mapping.dir            :  ${SCRATCH}/OMI/NO2/${my.region.grid}__mapping/%Y/%m
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! catalogues of omi data
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! 
+! Catalogue with OMI values displayed on track.
+!
+
+! target directory for catalogue:
+emip.omi.convert-catalogue.dir                   :  ${SCRATCH}/OMI/NO2/${my.region}__catalgoue
+! converted OMI files, absolute path or relative to catalogue:
+emip.omi.convert-catalogue.input.filenames       :  ../${my.region}/%Y/%m/OMI-Aura_NO2_*.nc
+
+
+! target directory for catalogue:
+emip.omi.regrid-catalogue.dir                    :  ${SCRATCH}/OMI/NO2/${my.region.grid}__catalgoue
+! regrided OMI files, absolute path or relative to catalogue:
+emip.omi.regrid-catalogue.input.filenames        :  ../${my.region.grid}/%Y/%m/OMI-Aura_NO2_*.nc
+
+
+! two catalogues, very similar ...
+#for CATALOGUE in convert-catalogue regrid-catalogue
+
+! task initialization:
+emip.omi.CATALOGUE.class                  :  emip_satx.EmipSatxCatalogue
+emip.omi.CATALOGUE.args                   :  '%{rcfile}'
+
+! time range:
+emip.omi.CATALOGUE.timerange.start        :  ${my.timerange.start}
+emip.omi.CATALOGUE.timerange.end          :  ${my.timerange.end}
+
+! map domain (west east south north)
+emip.omi.CATALOGUE.domain                 :  ${my.region.west} ${my.region.east} ${my.region.south} ${my.region.north}
+
+! renew existing files?
+emip.omi.CATALOGUE.renew                  :  True
+
+! variables to be plotted:
+emip.omi.CATALOGUE.vars                   :  vcd_trop sigma_vcd_trop \
+                                             cloud_fraction \
+                                             surface_pressure pressure_levels kernel
+
+! style:
+emip.omi.CATALOGUE.var.vcd_trop.vmin                    :   0.0
+emip.omi.CATALOGUE.var.vcd_trop.vmax                    :  10.0
+
+! style:
+emip.omi.CATALOGUE.var.sigma_vcd_trop.vmax              :  10.0
+
+! style:
+emip.omi.CATALOGUE.var.cloud_fraction.vmax              :   1.0
+emip.omi.CATALOGUE.var.cloud_fraction.colors            :   ['blue','cyan','white']
+
+! style:
+emip.omi.CATALOGUE.var.cloud_radiance_fraction.vmax     :   100.0
+emip.omi.CATALOGUE.var.cloud_radiance_fraction.colors   :   ['blue','cyan','white']
+
+! style:
+emip.omi.CATALOGUE.var.image_number.vmin                :   None
+
+! style:
+emip.omi.CATALOGUE.var.tropopause_layer.vmax            :   34.0
+
+! style:
+emip.omi.CATALOGUE.var.surface_pressure.units           :  hPa
+emip.omi.CATALOGUE.var.surface_pressure.vmin            :   800.0
+emip.omi.CATALOGUE.var.surface_pressure.vmax            :  1024.0
+emip.omi.CATALOGUE.var.surface_pressure.colors          :  ['brown','orange','yellow','green','darkgreen','cyan']
+
+! style:
+emip.omi.CATALOGUE.var.pressure_levels.units           :  hPa
+
+#endfor
+
+
+!-------------------------------------------------
+! end
+!-------------------------------------------------

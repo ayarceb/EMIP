@@ -1,0 +1,68 @@
+#! /usr/bin/env python3
+
+"""
+EMIP - EMEP Input Processor
+
+Conversion of input data for EMEP-DAS.
+
+"""
+
+
+#-------------------------------------------------
+# modules
+#-------------------------------------------------
+
+# modules:
+import sys
+import os
+
+# extend path:
+sys.path.insert( 0, os.path.join(os.getcwd(),'py') )
+
+# tools:
+import utopya
+import emip
+
+
+#-------------------------------------------------
+# begin
+#-------------------------------------------------
+
+# default settings:
+rcfile_default = 'rc/emip.rc'
+
+# init script:
+utos = utopya.UtopyaRunScriptRc()
+
+# setup standard command line arguments, and also enable rcfile arguments;
+# pass default values for settings file and base keyword:
+utos.ArgumentsSetup( description='EMEP Input Processor',
+                      rcfile=rcfile_default, rcbase='emip' )
+
+# evaluate known arguments, store the other ;
+# might show help text and exit:
+args,xargs = utos.ArgumentsParse()
+
+# get logger object to shout something:
+logger = utos.LoggerGet()
+
+# start, shout info:
+logger.info( '' )
+logger.info( '** EMIP - EMEP Input Processor **' )
+logger.info( '' )
+logger.info( 'input rcfile   : %s' % args.rcfile )
+logger.info( 'settings base  : %s' % args.rcbase )
+logger.info( '' )
+
+# init main object:
+d = emip.Emip( args.rcfile, rcbase=args.rcbase )
+
+# info:
+logger.info( '' )
+logger.info( '** end **' )
+logger.info( '' )
+
+
+#-------------------------------------------------
+# end
+#-------------------------------------------------

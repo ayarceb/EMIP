@@ -1,0 +1,916 @@
+
+"""
+***************
+``satx`` module
+***************
+
+Create and access file with satellite data extract.
+
+
+Class hierchy
+=============
+
+The classes are defined according to the following hierchy:
+
+* :py:class:`.UtopyaBase`
+
+  * :py:class:`.SatXFile`
+
+
+Classes
+=======
+"""
+
+
+# modules:
+import utopya
+
+
+########################################################################
+###
+### satellite extract file
+###
+########################################################################
+
+class SatXFile( utopya.UtopyaBase ) :
+
+    """
+    Storage for satelite data extract.
+    
+    If optional ``filename`` is provided, the :py:meth:`.Read` method is
+    called to read data from a file. If the optional ``varname`` list
+    is specified too, only selected variables will be read.
+    
+    To create a new track, initialize without arguments and add
+    new variables using the :py:meth:`.AddVariable` method.
+    Only certain dimension names and combinations are supported.
+    
+    A dimension size could be obtained with the :py:meth:`.GetDimension` method.
+    
+    Pixel arrays could be appended using the :py:meth:`.AppendPixels` method,
+    which will create a new variable if not present yet.
+    In this way, pixels from multiple tracks could be collected into a single file,
+    for example all pixels available for a day.
+    
+    The :py:meth:`GetPixelFootprint` could be used to obtain a polygon of a pixel footprint.
+
+    The original 2D track is sometimes useful for plotting the original layer.
+    Use the :py:meth:`.AppendTrack` method to add varaiables for the pixel corners within the track.
+    
+    """
+    
+    def __init__( self, filename=None, varnames=None ) :
+    
+        """
+        Initialize extract file.
+        """
+        
+        # init base class:
+        utopya.UtopyaBase.__init__( self )
+        
+        # empty storage for extracted variables:
+        self.var = {}
+        
+        # dimensions:
+        #   { 'pixel' : 123, 'corner' : 4, 'layer' : 20, 'layer_interface' : 21 }
+        self.dims = {}
+        
+        # no attributes:
+        self.attrs = {}
+        
+        # no regular grid yet:
+        self.grid = None
+
+        # storage for per-track attributes:
+        self.track_attrs = []
+        self.track_attrnames = None
+        
+        # read?
+        if filename is not None :
+            # read:
+            self.Read( filename, varnames=varnames )
+        #endif
+        
+    #enddef __init__
+    
+    # *
+    
+    def IsEmpty( self ) :
+     
+        """
+        Return True if extract has no data yet or zero number of pixels.
+        """
+        
+        # expected dimension:
+        dimname = 'pixel'
+        # present ?
+        if dimname in self.dims.keys() :
+            # empty if number of pixels is zero:
+            return self.dims[dimname] == 0
+        else :
+            # no data yet, thus empty ...
+            return True
+        #endif
+        
+    #enddef IsEmpty
+    
+    # *
+    
+    def GetDimension( self, dimname ) :
+    
+        """
+        Return length of requested dimension.
+        """
+        
+        # check ..
+        if dimname not in self.dims.keys() :
+            self.logger.error( 'dimension "%s" not defined yet' % dimname )
+            raise Exception
+        #endif
+        
+        # ok
+        return self.dims[dimname]
+        
+    #enddef GetDimension
+
+    # *
+    
+    def AddVariable( self, varname, values, dims, attrs ) :
+    
+        """
+        Add variable field.
+        
+        Arguments:
+        
+        * ``varname`` : target variable name
+        * ``values`` : array with data values
+        * ``dims``   : list of dimension names, check on known combinations
+        * ``attrs`` : dictionairy with attributes, 
+          should at least have ``units`` and one of ``standard_name`` or ``long_name``
+
+        The following dimensions are supported:
+        
+        * ``('pixel',)`` : regular data, for example total column, cloud fraction, etc.
+        * ``('pixel','corner')`` : pixel corners
+        * ``('pixel','layer')`` : profiles, kernels, etc.
+        * ``('pixel','layer_interface')`` : half-level pressures
+        * ``('layer',)`` : layer definitions
+        * ``('layer_interface',)`` : half-level definitions
+        * ``('track_image','track_pixel')`` : 2D track (centers)
+        * ``('track_image','track_pixel','corner')`` : 2D track corners
+        
+        Corners should be ordered counter-clock-wise as usual in math,
+        this allows correct definition of footprint polygons.
+    
+        """
+        
+        # init storage:
+        self.var[varname] = {}
+        
+        # store data:
+        self.var[varname]['data'] = values
+        
+        # check ...
+        if len(dims) != len(values.shape) :
+            self.logger.error( 'variable "%s" dims "%s" do not match with shape %s' % (varname,dims,str(values.shape)) )
+            raise Exception
+        #endif
+        
+        # loop over dimensions:
+        for idim,dimname in enumerate(dims) :
+            # size for this variable:
+            n = values.shape[idim]
+            # already defined?
+            if dimname in self.dims.keys() :
+                # check ..
+                if self.dims[dimname] != n :
+                    self.logger.error( 'dimension "%s" has length %i while expected %i' % (dimname,n,self.dims[dimname]) )
+                    self.logger.error( '  variable : %s %s' % (varname,str(dims)) )
+                    self.logger.error( '  shape    : %s' % str(values.shape) )
+                    raise Exception
+                #endif
+            else :
+                # store:
+                self.dims[dimname] = n
+            #endif
+        #endfor # dims
+        
+        # supported:
+        supported_dims = []
+        supported_dims.append( ('pixel',) )
+        supported_dims.append( ('pixel','corner') )
+        supported_dims.append( ('pixel','layer') )
+        supported_dims.append( ('pixel','layer_interface') )
+        supported_dims.append( ('layer',) )
+        supported_dims.append( ('layer_interface',) )
+        supported_dims.append( ('track_image','track_pixel') )
+        supported_dims.append( ('track_image','track_pixel','corner') )
+
+        # check ...
+        if dims not in supported_dims :
+            self.logger.error( 'dimension "%s" for variable "%s" not supported list:' % (str(dims),varname) )
+            for d in supported_dims :
+                self.logger.error( '  %s' % str(d) )
+            #endfor
+            raise Exception
+        #endif
+        # store:
+        self.var[varname]['dims'] = dims
+        
+        # check ...
+        if 'units' not in attrs.keys() :
+            self.logger.error( 'no "units" in attributes' )
+            raise Exception
+        #endif
+        if ('standard_name' not in attrs.keys()) and ('long_name' not in attrs.keys()) :
+            self.logger.error( 'neither "standard_name" nor "long_name" in attributes' )
+            raise Exception
+        #endif
+        # store:
+        self.var[varname]['attrs'] = attrs
+
+    #enddef AddVariable
+    
+    # *
+    
+    def AppendPixels( self, varname, values, dims, attrs ) :
+    
+        """
+        Append pixel values to existing variable,
+        or if that is not present yet, create a new variable
+        by passing all argument to the :py:meth:`.AddVariable` method.
+        
+        """
+        
+        # modules:
+        import numpy
+        
+        # check ..
+        if dims[0] != 'pixel' :
+            self.logger.error( 'first dimension of %s should be "pixel" ..' % str(dims) )
+            raise Exception
+        #endif
+        
+        # new ?
+        if varname not in self.var.keys() :
+        
+            # add:
+            self.AddVariable( varname, values, dims, attrs )
+            
+        else :
+        
+            # stack values:
+            ndim = len(values.shape)
+            # switch:
+            if ndim == 1 :
+                self.var[varname]['data'] = numpy.hstack( (self.var[varname]['data'],values) )
+            elif ndim == 2 :
+                self.var[varname]['data'] = numpy.vstack( (self.var[varname]['data'],values) )
+            else :
+                self.logger( 'unsupported ndim %i' % ndim )
+                raise Exception
+            #endif
+
+            # update counters:
+            self.attrs['npix'] = self.var[varname]['data'].shape[0]
+
+        #endif
+            
+    #enddef AppendPixels
+    
+    # *
+    
+    def AppendTrack( self, varname, values, dims, attrs ) :
+    
+        """
+        Append track. Not implemented yet for multiple tracks, simply calls the
+        :py:meth:`.AddVariable` method.
+        In future tracks might be stacked.        
+        """
+        
+        # new variable:
+        self.AddVariable( varname, values, dims, attrs )
+        
+    #enddef AppendTrack
+
+    # *
+    
+    
+#    #
+#    # code copied from:
+#    #   omi_he5_regional/main.f90
+#    #
+#    
+#    def GridListRegion( self, lon4,lat4, gridsize, domain ) :
+#    
+#        """
+#        Given the integer corner positions (ilat,lon), 
+#        return a list of grid cell indices (iind,jind), dimension nind
+#        
+#        Arguments:
+#          gridsize               :  nlon,nlat
+#          lon4[0:4], lat4[0:5]   :  corners
+#          domain                 :  west,east,sourth,north
+#        Return values:
+#          [(i1,j1),(i2,j2),...]  :  cell indices
+#          
+#        """
+#        
+#        # modules:
+#        import numpy
+#        
+#        # Number of sub-cells along (m-direction) 
+#        # and across (k-direction) the ground pixel :
+#        maxm = 10
+#        maxk = 10
+#        
+#        # extract domain boundaries:
+#        lonmin,lonmax,latmin,latmax = domain
+#        # extract grid size:
+#        im,jm = gridsize
+#        
+#        # init results:
+#        inds = []
+#        
+#        # sneller alternatief is : maxk = nind of maxk = nind+1    
+#        for k in range(maxk) :
+#            for m in range(maxm) :
+#                # longitude of sub-cell centre of groundpixel	
+#                lon_low  = lon4[1-1] + (lon4[3-1]-lon4[1-1])*(2*m-1)/(2.0*maxm)
+#                lon_high = lon4[2-1] + (lon4[4-1]-lon4[2-1])*(2*m-1)/(2.0*maxm)
+#                lon_cell = lon_low + (lon_high-lon_low)*(2*k-1)/(2.0*maxk)
+#                # latitude of sub-cell centre of groundpixel	
+#                lat_low  = lat4[1-1] + (lat4[3-1]-lat4[1-1])*(2*m-1)/(2.0*maxm)
+#                lat_high = lat4[2-1] + (lat4[4-1]-lat4[2-1])*(2*m-1)/(2.0*maxm)
+#                lat_cell = lat_low + (lat_high-lat_low)*(2*k-1)/(2.0*maxk)
+#                # calculating the indices of the  grid-cell
+#                ix = int(numpy.round( (lon_cell-lonmin)*(im-1.0)/(lonmax-lonmin) ))
+#                iy = int(numpy.round( (lat_cell-latmin)*(jm-1.0)/(latmax-latmin) ))
+#                # in domain ?
+#                if (ix >= 0) and (ix <= im-1) and (iy >= 0) and (iy <= jm-1) :
+#                    # add to result:
+#                    inds.append( (ix,iy) )
+#                #endif
+#            #endfor # subcells
+#        #endfor  # subcells
+#        
+#        # ok
+#        return inds
+#
+#    #enddef GridListRegion
+    
+    # *
+    
+    def Write( self, filename, attrs=None, history=[] ) :
+    
+        """
+        Write data to provided ``filename``.
+        
+        Optional arguments:
+        
+        * ``attrs`` : dictionairy with global attributes
+        * ``history`` : list of str values that describe how the content was created, 
+          this will be added to the global ``history`` attribute
+        """
+        
+        # modules:
+        import logging
+        import os
+        import datetime
+        import netCDF4
+        import numpy
+ 
+        # destination filename:
+        if filename == None : filename = self.filename
+        
+        # create directory if necessary:
+        dname = os.path.dirname( filename )
+        if (len(dname) > 0) and (not os.path.isdir(dname)) : os.makedirs( dname )
+        
+        # open file:
+        ncid = netCDF4.Dataset( filename, 'w', format='NETCDF3_CLASSIC' )
+        
+        # store attributes:
+        if attrs is not None : self.attrs.update( attrs )
+        
+        # extend history:
+        if len(history) > 0 :
+            # time step as "Mon 1 Jan 01:01:01 2001"
+            tstamp = datetime.datetime.today().strftime('%a %b %d %H:%M:%S %Y' )
+            # create line:
+            histline = str(tstamp)
+            for hist in history :
+                histline = histline+', '+hist
+            #endfor
+            # extend?
+            if 'history' in self.attrs.keys() :
+                self.attrs['history'] = histline+'\n'+self.attrs['history']
+            else :
+                self.attrs['history'] = histline
+            #endif
+        #endif
+        
+        # global attributes:
+        for key in self.attrs.keys() :
+            ncid.setncattr( key, self.attrs[key] )
+        #endfor
+        
+        # track attributes ?
+        if len(self.track_attrs) > 0 :
+            # name order defined ?
+            names = self.track_attrnames
+            if names == None : names = self.track_attrs[0].keys()
+            # loop over tracks:
+            for itrack in range(len(self.track_attrs)) :
+                # add:
+                for name in names :
+                    ncid.setncattr( 'track_%2.2i_%s' % (itrack+1,name), self.track_attrs[itrack][name] )
+                #endfor
+            #endfor
+        #endif
+        
+        # add dimensions:
+        for dimname in self.dims.keys() :
+            ncid.createDimension( dimname, self.dims[dimname] )
+        #endfor
+
+        # regular grid for average ?
+        if self.grid != None :
+            # dimensions:
+            ncid.createDimension( 'grid_lon', self.grid['nlon'] )
+            ncid.createDimension( 'grid_lat', self.grid['nlat'] )
+            # axis:
+            varid = ncid.createVariable( 'grid_lon', 'f4', ('grid_lon',) )
+            varid.setncattr( 'standard_name', 'longitude' )
+            varid.setncattr( 'units', 'degrees east' )
+            varid[:] = self.grid['lons']
+            # axis:
+            varid = ncid.createVariable( 'grid_lat', 'f4', ('grid_lat',) )
+            varid.setncattr( 'standard_name', 'latitude' )
+            varid.setncattr( 'units', 'degrees north' )
+            varid[:] = self.grid['lats']
+        #endif
+
+        # loop over target variables:
+		
+
+        for varname in self.var.keys() :
+               
+            # extract data:
+            values    = self.var[varname]['data']
+            
+            # masked ?
+            if 'fill_value' in dir(values) :
+                fill_value = values.fill_value                
+            else :
+                fill_value = None
+            #endif
+            print(fill_value) 
+            # dimension names:
+            dims = self.var[varname]['dims']
+            
+            # data type:
+            dtype = values.dtype
+            # degrade ...
+            if dtype == 'f8' : dtype = 'f4'
+
+            # specials ...
+            if dtype == datetime.datetime :
+                # reset:
+                dtype = 'f8'
+                # convert:
+                values = netCDF4.date2num( numpy.array(values), self.var[varname]['attrs']['units'] )
+            #endif
+
+            # create variable:
+            varid = ncid.createVariable( varname, dtype, dims, fill_value=fill_value )
+	     
+            # write data:
+            varid[:] = values
+            # attributes:		
+            for key in self.var[varname]['attrs'].keys() :
+                if key.startswith('_'):continue 
+                varid.setncattr( key, self.var[varname]['attrs'][key] ) 
+		
+            
+
+            #endif
+            
+        #endfor # target variables 
+        
+        # ok:
+        ncid.close()
+        
+    #enddef Write
+    
+    # *
+    
+    def Read( self, filename, varnames=None ) :
+    
+        """
+        Read data from existing file.
+        Eventually selected variables only if ``varnames`` is defined as list.
+        """
+        
+        # modules:
+        import logging
+        import os
+        import datetime
+        import netCDF4
+        
+        # store:
+        self.filename = filename
+        
+        # check ...
+        if not os.path.isfile(self.filename) :
+            logging.error( 'file not found : %s' % self.filename )
+            raise Exception
+        #endif
+        
+        # open file:
+        ncid = netCDF4.Dataset( self.filename, 'r' )
+        
+        # global attributes:
+        self.attrs = {}
+        for key in ncid.ncattrs() :
+            self.attrs[key] = ncid.getncattr(key)
+        #endif
+        
+        # loop over dimensions:
+        for dname in ncid.dimensions.keys() :
+            # length:
+            n = len(ncid.dimensions[dname])
+            # translate ...
+            dimname = dname
+            if dname == 'fakeDim2' : dimname = 'pixel'
+            if dname == 'fakeDim12' : dimname = 'layer'
+            # store:
+            self.dims[dimname] = n
+        #endif
+        
+        # trap empty file:
+        if self.dims['pixel'] == 0 :
+        
+            # info ...
+            logging.warning( '    no pixels in "%s", assume empty' % self.filename )
+            
+        else :
+        
+            # loop over variables:
+            for varname in ncid.variables.keys() :
+            
+                # filter?
+                if varnames is not None :
+                    if varname not in varnames : continue
+                #endif
+                
+                # init storage:
+                self.var[varname] = {}
+                # extract variable id:
+                varid = ncid.variables[varname]
+                # copy dimesion names:
+                self.var[varname]['dims'] = varid.dimensions
+                # read data:
+                self.var[varname]['data'] = varid[:]
+                # read attributes:
+                attrs = {}
+                for key in varid.ncattrs() :
+                    attrs[key] = varid.getncattr(key)
+                #endfor
+                self.var[varname]['attrs'] = attrs
+                
+                # convert ..
+                if varname == 'time' :
+                    self.var[varname]['data'] = netCDF4.num2date( self.var[varname]['data'], self.var[varname]['attrs']['units'] )
+                #endif
+                
+                ## fix ..
+                #if ('long_name' not in self.var[varname].keys()) and ('standard_name' in self.var[varname].keys()) :
+                #    self.var[varname]['long_name'] = self.var[varname]['standard_name']
+                ##endif
+                ## special ...
+                #if varname in ['corner_longitudes','corner_latitudes',
+                #               'orbit_number','pixel_number','scan_number'] :
+                #    self.var[varname]['special'] = varname
+                #else :
+                #    self.var[varname]['special'] = 'None'
+                ##endif
+            #endfor
+            
+        #endif  # any pixels at al ?
+        
+        # ok:
+        ncid.close()
+        
+    #enddef Read
+    
+    # *
+    
+#    def Extend( self, source ) :
+#    
+#        """
+#        Extend with data from ``source`` object of same class.
+#        """
+#        
+#        # modules:
+#        import logging
+#        import numpy
+#        
+#        # global attributes:
+#        for key in source.attrs.keys() : 
+#            if key in self.attrs.keys() :
+#                if self.attrs[key] != source.attrs[key] :
+#                    self.attrs[key] = '%s\n %s' % (self.attrs[key],source.attrs[key])
+#                #endif
+#            else :
+#                self.attrs[key] = source.attrs[key]
+#            #endif
+#        #endif
+#        
+#        # trap empty file:
+#        if source.npix == 0 :
+#        
+#            # info ...
+#            logging.warning( '    no pixels in source object ...' )
+#
+#        else :
+#        
+#            # info ...
+#            logging.info( '    add %i pixels from source object ...' % source.npix )
+#        
+#            # add number of pixels:
+#            self.npix = self.npix + source.npix
+#            
+#            # check number of levels:
+#            if self.nlayer != source.nlayer :
+#                logger.error( 'layers do not match: %s vs %i' % (self.nlayer,source.nlayer) )
+#                raise Exception
+#            #endif
+#
+#            # loop over variables:
+#            for varname in source.var.keys() :
+#                # check ..
+#                if varname not in self.var.keys() :
+#                    logger.error( 'extra variable "%s" not found in current content' % varname )
+#                    raise Exception
+#                #endif
+#                # extend:
+#                ndim = len(self.var[varname]['data'].shape)
+#                if ndim == 1 :
+#                    self.var[varname]['data'] = numpy.hstack( (self.var[varname]['data'],source.var[varname]['data']) )
+#                else :
+#                    self.var[varname]['data'] = numpy.vstack( (self.var[varname]['data'],source.var[varname]['data']) )
+#                #endif
+#            #endfor
+#            
+#        #endif  # any pixels at al ?
+#        
+#    #enddef Extend
+    
+    
+    # *
+    
+    def GetDims( self, varname ) :
+        
+        """
+        Return variable dimension names.
+        """
+        
+        # check ...
+        if varname not in self.var.keys() :
+            self.logger.error( 'variable "%s" not available in sat extract' % (varname) )
+            raise Exeption
+        #endif
+        
+        # ok
+        return self.var[varname]['dims']
+        
+    #enddef GetDims
+    
+    
+    # *
+    
+    def GetPixelFootprint( self, ipix ) :
+    
+        """
+        Return footprint as :py:class:`go_vector.Polygon` object.
+        The following variables are expected to be present:
+    
+        * ``corner_longitudes`` : 2D array of longitudes with dimensions ``('pixel','corner')`` 
+        * ``corner_latitudes``  : idem for latitudes
+        """
+        
+        # tools:
+        import go
+        
+        # dims:
+        npix    = self.GetDimension( 'pixel' )
+        ncorner = self.GetDimension( 'corner' )
+
+        # check ...
+        if (ipix < 0) or (ipix > npix-1) :
+            self.logger.error( 'pixel index %i outside range %i:%i' % (ipix,0,npix) )
+            raise Exception
+        #endif
+        
+        # corners, assume order is already counter-clock-wise:
+        corners = []
+        for icorner in range(ncorner) :
+            # define vector to corner with (x,y) coordinates:
+            corners.append( go.vector.Vector( self.var['corner_longitudes']['data'][ipix,icorner],
+                                              self.var['corner_latitudes' ]['data'][ipix,icorner] ) )
+        #endfor
+        # define polygon:
+        pg = go.vector.Polygon( corners=corners )
+        
+        # ok
+        return pg
+        
+    #enddef GetPixelFootprint
+
+    # *
+    
+    def GetTrack( self, varname, parent = None):
+    
+        """
+        Extract variable on track grid.
+        
+        Arguments:
+        
+        * ``varname`` : variable name
+        
+        Return values:
+        
+        * ``xx``  : corner longitudes (nimage+1,npixel+1)
+        * ``yy``  : corner latitudes (nimage+1,npixel+1)
+        * ``values`` : masked array with values at pixel locations (nimage,npixel)
+        * ``units`` : str units
+
+        The corner locations are taken from the following variables that are
+        expected to be present:
+    
+        * ``track_corner_longitudes`` : 3D array of longitudes with dimensions ``('track_image','track_pixel','corner')``
+        * ``track_corner_latitudes``  : idem for latitudes
+        * ``time`` : observation times with dimensions ``('pixel',)``
+        """
+        
+        # modules:
+        import numpy
+        
+        # Check if required variable is in SatX object
+        if varname not in self.var.keys():
+            self.logger.error( 'variable "%s" not available in sat extract' % (varname) )
+            raise Exception( 'variable "%s" not available in sat extract' % (varname) )
+            
+    
+        #endif
+
+        
+        # If no parent file is supplied, check for required variables
+        if parent is None:
+            for vname in ['track_corner_longitudes', 'track_corner_latitudes', 'pixel']:
+                if vname not in self.var.keys() :
+                    self.logger.error( 'variable "%s" not available in sat extract' % (vname) )
+                    raise Exception( 'variable "%s" not available in sat extract' % (vname) )
+        
+        else:
+            vars_to_add = ['track_corner_longitudes', 'track_corner_latitudes', 'pixel']
+            for vname in vars_to_add:
+                if vname not in parent.var.keys() :
+                    self.logger.error( 'variable "%s" not available in parent SatX class' % (vname) )
+                    raise Exception('variable "%s" not available in parent SatX class' % (vname) )
+                else:
+                    self.AddVariable(varname  = vname,  values = parent.var[vname]['data'], dims = parent.var[vname]['dims'], attrs  = parent.var[vname]['attrs'])
+            #end for
+        #end if
+
+        # shape of track grid:
+        nscan,npixel,ncorner = self.var['track_corner_longitudes']['data'].shape
+
+        # init 2D corner fields:
+        xx = numpy.zeros((nscan+1,npixel+1),float)
+        yy = numpy.zeros((nscan+1,npixel+1),float)
+        # no idea yet how to fill them correctly automatically,
+        # for the moment assume the (converted!) OMI order:      
+        #
+        #      ^ scan
+        #       \        _ - o 1
+        #         2 o -      \     
+        #            \    _ - o 0  ---> pixel
+        #           3 o -
+        #
+        # figure of first pixel footprints to determine the order ..
+        if False :
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax = fig.add_axes([0.1,0.1,0.8,0.8])
+            ax.plot( self.var['track_corner_longitudes']['data'][0,0,:], 
+                     self.var['track_corner_latitudes' ]['data'][0,0,:], 'r-o' )
+            ax.plot( self.var['track_corner_longitudes']['data'][0,0,0], 
+                     self.var['track_corner_latitudes' ]['data'][0,0,0], 'rs' )
+            ax.plot( self.var['track_corner_longitudes']['data'][0,1,:], 
+                     self.var['track_corner_latitudes' ]['data'][0,1,:], 'g-o' )
+            ax.plot( self.var['track_corner_longitudes']['data'][0,1,0], 
+                     self.var['track_corner_latitudes' ]['data'][0,1,0], 'gs' )
+            ax.plot( self.var['track_corner_longitudes']['data'][1,0,:], 
+                     self.var['track_corner_latitudes' ]['data'][1,0,:], 'b-o' )
+            ax.plot( self.var['track_corner_longitudes']['data'][1,0,0], 
+                     self.var['track_corner_latitudes' ]['data'][1,0,0], 'bs' )
+            fig.savefig('test-corners.png')
+        #endif
+        #
+        # copy longitudes:
+        xx[ 0,0:npixel] = self.var['track_corner_longitudes']['data'][0, :,3]
+        xx[ 0,  npixel] = self.var['track_corner_longitudes']['data'][0,-1,0]
+        xx[1:,0:npixel] = self.var['track_corner_longitudes']['data'][:, :,2]
+        xx[1:,  npixel] = self.var['track_corner_longitudes']['data'][:,-1,1]
+        # copy latitudes:
+        yy[ 0,0:npixel] = self.var['track_corner_latitudes']['data'][0, :,3]
+        yy[ 0,  npixel] = self.var['track_corner_latitudes']['data'][0,-1,0]
+        yy[1:,0:npixel] = self.var['track_corner_latitudes']['data'][:, :,2]
+        yy[1:,  npixel] = self.var['track_corner_latitudes']['data'][:,-1,1]
+        #
+        # test ...
+        if False :
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax = fig.add_axes([0.1,0.1,0.8,0.8])
+            # mark original corner points:
+            for k in range(4) :
+                ax.plot( self.var['track_corner_longitudes']['data'][:,:,k], 
+                         self.var['track_corner_latitudes' ]['data'][:,:,k], 
+                         linestyle='None', marker='o', markeredgecolor='red', markerfacecolor='None' )
+            #endfor
+            # add raster:
+            for j in range(nscan+1) :
+                ax.plot( xx[j,:], yy[j,:], linestyle='-', color='black' )
+            #endfor
+            for i in range(npixel+1) :
+                ax.plot( xx[:,i], yy[:,i], linestyle='-', color='black' )
+            #endfor
+            # save:
+            fig.savefig('test-raster.png')
+        #endif
+        
+        # compressed indices:
+        pp = self.var['pixel']['data']
+        # uncompress:
+        jj = numpy.floor( pp / npixel ).astype(int)
+        ii = numpy.floor( pp % npixel ).astype(int)
+        
+        # init masked array:
+        values = numpy.ma.array( data=numpy.zeros((nscan,npixel),float),
+                                 mask=numpy.ones ((nscan,npixel),bool ) )
+        # copy values:
+        values.data[jj,ii] = numpy.squeeze( self.var[varname]['data'] )
+        values.mask[jj,ii] = False
+        
+        # extract units:
+        units = self.var[varname]['attrs']['units']
+        
+        # ok
+        return xx,yy,values,units
+        
+    #enddef GetTrack
+
+    # *
+    
+    def GetTimeAverage( self ) :
+    
+        """
+        Return average of first and lsat time value.
+        """
+        
+        # loop over required variables:
+        for vname in ['time'] :
+            # check ...
+            if vname not in self.var.keys() :
+                self.logger.error( 'variable "%s" not available in sat extract' % (vname) )
+                raise Exception( 'variable "%s" not available in sat extract' % (vname) )
+            #endif
+        #endfor
+        
+        # range:
+        t1 = self.var['time']['data'][ 0]
+        t2 = self.var['time']['data'][-1]
+        # average time:
+        taver = t1 + (t2-t1)/2
+        
+        ## testing ...
+        #tfmt = '%Y-%m-%d %H:%M'
+        #print( 'xxx pixel times [ %s , %s ]' % (t1.strftime(tfmt),t2.strftime(tfmt)) )
+        
+        # ok
+        return taver
+        
+    #enddef GetTimeAverage
+    
+    
+#endclass SatXFile
+
+
+########################################################################
+###
+### end
+###
+########################################################################

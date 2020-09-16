@@ -1,0 +1,451 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!
+!!! EMIP - EMEP Input Processor
+!!!
+!!! Processing of TROPOMI data:
+!!!  - download original data files
+!!!  - convert to netcdf format
+!!!  - sample on regular grid
+!!!  - create catalogue of figures
+!!!
+!!! This file is included in "emip.rc".
+!!! The following keywords are already defined:
+!!!
+!!!  ! timerange settings:
+!!!  my.timerange.start
+!!!  my.timerange.end
+!!!
+!!!  ! region settings:
+!!!  my.region
+!!!  my.region.west
+!!!  my.region.east
+!!!  my.region.south
+!!!  my.region.north
+!!!
+!!!  ! regular grid:
+!!!  my.region.grid
+!!!  my.region.dlon
+!!!  my.region.dlat
+!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+!-------------------------------------------------
+! tropomi processing
+!-------------------------------------------------
+
+! taks to be performed:
+emip.tropomi.class        :  emip.EmipTaskList
+emip.tropomi.args         :  '%{rcfile}'
+
+!! task list:
+emip.tropomi.tasks        :  download convert convert-catalogue regrid regrid-catalogue
+
+! testing one-by-one ...
+!emip.tropomi.tasks        :  download
+!emip.tropomi.tasks        :  convert
+!emip.tropomi.tasks        :  convert-catalogue
+!emip.tropomi.tasks        :  convert convert-catalogue
+!emip.tropomi.tasks        :  regrid
+!emip.tropomi.tasks        :  regrid-catalogue
+
+! Only skip download:
+!emip.tropomi.tasks         : convert convert-catalogue regrid regrid-catalogue
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! product description
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! subdir:
+my.temis.tropomi.dir            :  airpollution/no2col/data/tropomi
+
+! prefix:
+my.tropomi.product              :  S5P_OFFL_L2
+
+!~ reproduced in 2018-12, used in downloads 2018-01 to2018-05:
+!my.tropomi.product_rpro         :  S5P_RPRO_L2
+
+
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! download
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! use UTOPyA class for download:
+emip.tropomi.download.class                 :  utopya.UtopyaInstall
+emip.tropomi.download.args                  :  '%{rcfile}'
+
+! 
+! TROPOMI archive on TEMIS:
+!   http://www.temis.nl/airpollution/no2col/data/tropomi/2018/07/tropomi_no2_20180728.tar
+
+! data sets to be installed:
+emip.tropomi.download.sets                  :  daily
+
+! target directory:
+emip.tropomi.download.daily.dir             :  ${my.observations}/TEMIS/${my.temis.tropomi.dir}
+
+! install files per day:
+emip.tropomi.download.daily.timerange       :  ${my.timerange.start} to ${my.timerange.end} by 1 day
+
+! download from:
+emip.tropomi.download.daily.arch            :  http://www.temis.nl/${my.temis.tropomi.dir}
+! filenames, some might not exist:
+emip.tropomi.download.daily.files           :  [%Y/%m/tropomi_no2_%Y%m%d.tar]
+
+! debug ...
+emip.tropomi.download.daily.verbose         :  True
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! conversion (pixel selection)
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! 
+! Extract subset from sattelite data.
+!
+! Input filters
+!
+!   Filters can be applied on input to select a subset of the pixels only.
+!   Specifiy a list of filter names.
+!   For each name, specify the variable which values are used for testing,
+!   the type test, and eventually some thresholds or other settings for this type.
+!   The units of the thresholds should match with the units in the variables,
+!   the expected units have to be defined too.
+!   The examples below show possible types and their settings.
+!
+
+! task initialization:
+emip.tropomi.convert.class                  :  emip_tropomi.EmipTropomiConvert
+emip.tropomi.convert.args                   :  '%{rcfile}'
+
+! time range:
+emip.tropomi.convert.timerange.start        :  ${my.timerange.start}
+emip.tropomi.convert.timerange.end          :  ${my.timerange.end}
+
+!
+! input files
+!
+
+! input directory:
+emip.tropomi.convert.files.dir                      :  ${my.observations}/TEMIS/${my.temis.tropomi.dir}/%Y/%m
+
+! filename filters:
+emip.tropomi.convert.files.filters                  :  ${my.tropomi.product}__*.nc ${my.tropomi.product_rpro}__*.nc
+
+! target component:
+emip.tropomi.convert.component                      :  NO2
+
+! renew existing files?
+emip.tropomi.convert.renew                          :  True
+
+! wait for certain file to continue ?
+! leave emtpy for start from begin:
+emip.tropomi.convert.wait.for                       :  
+
+! adhoc: skip some problematic files:
+emip.tropomi.convert.skip                           :  
+ 
+
+!
+! Filters
+!
+
+! selection names:
+emip.tropomi.convert.filters                        :  lons lats quality
+
+! filter settings:
+emip.tropomi.convert.filter.lons.var                :  PRODUCT/longitude
+emip.tropomi.convert.filter.lons.units              :  degrees_east
+emip.tropomi.convert.filter.lons.type               :  minmax
+emip.tropomi.convert.filter.lons.minmax             :  ${my.region.west} ${my.region.east}
+
+! filter settings:
+emip.tropomi.convert.filter.lats.var                :  PRODUCT/latitude
+emip.tropomi.convert.filter.lats.units              :  degrees_north
+emip.tropomi.convert.filter.lats.type               :  minmax
+emip.tropomi.convert.filter.lats.minmax             :  ${my.region.south} ${my.region.north}
+
+! Comment in "PRODUCT/qa_value" variable:
+!   "A continuous quality descriptor, 
+!   varying between 0 (no data) and 1 (full quality data). 
+!   Recommend to ignore data with qa_value < 0.5" 
+! Tests by Bijan suggest that better threshold is 0.54,
+! this removes the kernels with very high values.
+emip.tropomi.convert.filter.quality.var             :  PRODUCT/qa_value
+emip.tropomi.convert.filter.quality.units           :  1
+emip.tropomi.convert.filter.quality.type            :  min
+emip.tropomi.convert.filter.quality.min             :  0.54
+
+
+!
+! output files
+!
+
+! output directory:
+emip.tropomi.convert.output.dir                     :  ${my.scratch}/TROPOMI/NO2/${my.region}/%Y/%m
+
+
+! filename template:
+!~ including orbit number:
+!emip.tropomi.convert.output.filename                :  ${my.tropomi.product}_${emip.tropomi.convert.component}_%Y%m%d_%{orbit}.nc
+!~ average time of selected pixels, round to nearby hour:
+emip.tropomi.convert.output.filename                :  ${my.tropomi.product}_${emip.tropomi.convert.component}_%Y%m%d_%H%M.nc
+
+! global attributes:
+emip.tropomi.convert.output.attrs               :  format Conventions \
+                                                     author institution email
+
+!
+emip.tropomi.convert.output.attr.format         :  1.0
+!
+emip.tropomi.convert.output.attr.Conventions    :  CF-1.6
+!
+emip.tropomi.convert.output.attr.author         :  ${my.attr.author}
+emip.tropomi.convert.output.attr.institution    :  ${my.attr.institution}
+emip.tropomi.convert.output.attr.email          :  ${my.attr.email}
+
+
+!
+! variables
+!
+
+! which fields to be put out ?
+emip.tropomi.convert.output.vars    :  longitude corner_longitudes \
+                                       latitude corner_latitudes \
+                                       track_longitude track_corner_longitudes \
+                                       track_latitude  track_corner_latitudes \
+                                       pixel \
+                                       time \
+                                       vcd_trop sigma_vcd_trop \
+                                       pressure_levels kernel \
+                                       cloud_fraction cloud_radiance_fraction \
+                                       qa_value
+
+! description:
+emip.tropomi.convert.output.var.longitude.from                  :   PRODUCT/longitude
+emip.tropomi.convert.output.var.longitude.units                 :   degrees_east
+
+! description:
+emip.tropomi.convert.output.var.corner_longitudes.from          :   PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds
+emip.tropomi.convert.output.var.corner_longitudes.units         :   degrees_east
+
+! description:
+emip.tropomi.convert.output.var.latitude.from                   :   PRODUCT/latitude
+emip.tropomi.convert.output.var.latitude.units                  :   degrees_north
+
+! description:
+emip.tropomi.convert.output.var.corner_latitudes.from           :   PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds
+emip.tropomi.convert.output.var.corner_latitudes.units          :   degrees_north
+
+! original track:
+!~ center lon
+emip.tropomi.convert.output.var.track_longitude.from            :   PRODUCT/longitude
+emip.tropomi.convert.output.var.track_longitude.units           :   degrees_east
+emip.tropomi.convert.output.var.track_longitude.special         :   track_longitude
+!~ center lat
+emip.tropomi.convert.output.var.track_latitude.from             :   PRODUCT/latitude
+emip.tropomi.convert.output.var.track_latitude.units            :   degrees_north
+emip.tropomi.convert.output.var.track_latitude.special          :   track_latitude
+!~ corner lons
+emip.tropomi.convert.output.var.track_corner_longitudes.from    :   PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds
+emip.tropomi.convert.output.var.track_corner_longitudes.units   :   degrees_east
+emip.tropomi.convert.output.var.track_corner_longitudes.special :   track_corner_longitudes
+!~ corner lats
+emip.tropomi.convert.output.var.track_corner_latitudes.from     :   PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds
+emip.tropomi.convert.output.var.track_corner_latitudes.units    :   degrees_north
+emip.tropomi.convert.output.var.track_corner_latitudes.special  :   track_corner_latitudes
+! compression index:
+emip.tropomi.convert.output.var.pixel.units                     :   1
+emip.tropomi.convert.output.var.pixel.special                   :   compress="track_image track_pixel"
+
+! time value per scan line
+emip.tropomi.convert.output.var.time.from                       :   PRODUCT/delta_time
+emip.tropomi.convert.output.var.time.units                      :   __special__
+emip.tropomi.convert.output.var.time.special                    :   time
+  
+! description:
+emip.tropomi.convert.output.var.vcd_trop.from                   :   PRODUCT/nitrogendioxide_tropospheric_column
+emip.tropomi.convert.output.var.vcd_trop.units                  :   1e15 mlc/cm2
+
+! description:
+emip.tropomi.convert.output.var.sigma_vcd_trop.from             :   PRODUCT/nitrogendioxide_tropospheric_column_precision
+emip.tropomi.convert.output.var.sigma_vcd_trop.units            :   1e15 mlc/cm2
+
+! description:
+emip.tropomi.convert.output.var.sigma_vcd_trop_ak.from          :   PRODUCT/nitrogendioxide_tropospheric_column_precision_kernel
+emip.tropomi.convert.output.var.sigma_vcd_trop_ak.units         :   1e15 mlc/cm2
+
+! Convert from hybride coefficient bounds in (2,nlev) aray to 3D half level pressures:
+emip.tropomi.convert.output.var.pressure_levels.special         :   hybounds_to_pressure
+emip.tropomi.convert.output.var.pressure_levels.sp              :   PRODUCT/SUPPORT_DATA/INPUT_DATA/surface_pressure
+emip.tropomi.convert.output.var.pressure_levels.hyam            :   PRODUCT/tm5_constant_a
+emip.tropomi.convert.output.var.pressure_levels.hybm            :   PRODUCT/tm5_constant_b
+emip.tropomi.convert.output.var.pressure_levels.units           :   Pa
+
+! description:
+emip.tropomi.convert.output.var.kernel.special                  :   kernel_trop
+emip.tropomi.convert.output.var.kernel.avk                      :   PRODUCT/averaging_kernel
+emip.tropomi.convert.output.var.kernel.amf                      :   PRODUCT/air_mass_factor_total
+emip.tropomi.convert.output.var.kernel.amft                     :   PRODUCT/air_mass_factor_troposphere
+emip.tropomi.convert.output.var.kernel.troplayer                :   PRODUCT/tm5_tropopause_layer_index
+emip.tropomi.convert.output.var.kernel.units                    :   1
+
+! description:
+emip.tropomi.convert.output.var.cloud_fraction.from             :   PRODUCT/SUPPORT_DATA/INPUT_DATA/cloud_fraction_crb
+emip.tropomi.convert.output.var.cloud_fraction.units            :   1
+
+! description:
+emip.tropomi.convert.output.var.cloud_radiance_fraction.from    :   PRODUCT/SUPPORT_DATA/DETAILED_RESULTS/cloud_radiance_fraction_nitrogendioxide_window
+emip.tropomi.convert.output.var.cloud_radiance_fraction.units   :   1
+
+! description:
+emip.tropomi.convert.output.var.qa_value.from                   :   PRODUCT/qa_value
+emip.tropomi.convert.output.var.qa_value.units                  :   1
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! regrid
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! safety check ..
+#if "${my.region.grid}" == "${my.region}"
+#error Name of regridding region ("${my.region.grid}") should be different from name of download region ("${my.region}")
+#endif
+
+! task initialization:
+emip.tropomi.regrid.class                  :  emip_satx.EmipSatxRegrid
+emip.tropomi.regrid.args                   :  '%{rcfile}'
+
+! time range:
+emip.tropomi.regrid.timerange.start        :  ${my.timerange.start}
+emip.tropomi.regrid.timerange.end          :  ${my.timerange.end}
+
+! input directory for netcdf files, 
+! might include time templates:
+emip.tropomi.regrid.input.dir              :  ${my.scratch}/TROPOMI/NO2/${my.region}/%Y/%m
+! filename filter:
+emip.tropomi.regrid.input.filenames        :  ${my.tropomi.product}_*.nc
+
+! target directory including time templates:
+emip.tropomi.regrid.output.dir             :  ${my.scratch}/TROPOMI/NO2/${my.region.grid}/%Y/%m
+! target filenames;
+! time will be whole hour nearest to
+! the average of sample times on track:
+emip.tropomi.regrid.output.filename        :  ${my.tropomi.product}_NO2_%Y%m%d_%H%M.nc
+
+! re-create gridded files?
+emip.tropomi.regrid.output.renew           :  True
+
+! overwrite existing files?
+! error is raised if file is present already:
+emip.tropomi.regrid.output.overwrite       :  True
+
+! regular target grid:
+!~ resolution in degrees:
+emip.tropomi.regrid.grid.dlon              :  ${my.region.dlon}
+emip.tropomi.regrid.grid.dlat              :  ${my.region.dlat}
+!~ bounding box:
+emip.tropomi.regrid.grid.west              :  ${my.region.west}
+emip.tropomi.regrid.grid.east              :  ${my.region.east}
+emip.tropomi.regrid.grid.south             :  ${my.region.south}
+emip.tropomi.regrid.grid.north             :  ${my.region.north}
+
+! load mapping file if present?
+emip.tropomi.regrid.mapping.load           :  False
+! creating mapping file?
+emip.tropomi.regrid.mapping.store          :  True
+! target directory:
+emip.tropomi.regrid.mapping.dir            :  ${my.scratch}/TROPOMI/NO2/${my.region.grid}__mapping/%Y/%m
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! catalogues of figures
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+! 
+! Catalogue with values displayed on track.
+!
+
+! target directory for catalogue:
+emip.tropomi.convert-catalogue.dir                   :  ${my.scratch}/TROPOMI/NO2/${my.region}__catalgoue
+! converted files, absolute path or relative to catalogue:
+emip.tropomi.convert-catalogue.input.filenames       :  ../${my.region}/%Y/%m/${my.tropomi.product}_*.nc
+
+
+! target directory for catalogue:
+emip.tropomi.regrid-catalogue.dir                    :  ${my.scratch}/TROPOMI/NO2/${my.region.grid}__catalgoue
+! regrided files, absolute path or relative to catalogue:
+emip.tropomi.regrid-catalogue.input.filenames        :  ../${my.region.grid}/%Y/%m/${my.tropomi.product}_*.nc
+
+
+! two catalogues, very similar ...
+#for CATALOGUE in convert-catalogue regrid-catalogue
+
+! task initialization:
+emip.tropomi.CATALOGUE.class                  :  emip_satx.EmipSatxCatalogue
+emip.tropomi.CATALOGUE.args                   :  '%{rcfile}'
+
+! time range:
+emip.tropomi.CATALOGUE.timerange.start        :  ${my.timerange.start}
+emip.tropomi.CATALOGUE.timerange.end          :  ${my.timerange.end}
+
+! map domain (west east south north)
+emip.tropomi.CATALOGUE.domain                 :  ${my.region.west} ${my.region.east} ${my.region.south} ${my.region.north}
+
+! figure size (inches), default is (8,6):
+emip.tropomi.CATALOGUE.figsize                :  ${my.figsize}
+
+! renew existing files?
+emip.tropomi.CATALOGUE.renew                  :  True
+
+! variables to be plotted:
+!emip.tropomi.CATALOGUE.vars                   :  vcd_trop
+emip.tropomi.CATALOGUE.vars                   :  vcd_trop sigma_vcd_trop \
+                                                 cloud_fraction cloud_radiance_fraction qa_value \
+                                                 pressure_levels kernel
+
+! style:
+emip.tropomi.CATALOGUE.var.vcd_trop.vmin                    :   0.0
+emip.tropomi.CATALOGUE.var.vcd_trop.vmax                    :  10.0
+
+! style:
+emip.tropomi.CATALOGUE.var.sigma_vcd_trop.vmax              :  10.0
+
+! style:
+emip.tropomi.CATALOGUE.var.cloud_fraction.vmax              :   1.0
+emip.tropomi.CATALOGUE.var.cloud_fraction.colors            :   ['blue','cyan','white']
+
+! style:
+emip.tropomi.CATALOGUE.var.cloud_radiance_fraction.vmax     :   1.0
+emip.tropomi.CATALOGUE.var.cloud_radiance_fraction.colors   :   ['blue','cyan','white']
+
+! style:
+emip.tropomi.CATALOGUE.var.qa_value.vmin                    :   0.5
+emip.tropomi.CATALOGUE.var.qa_value.vmax                    :   1.0
+emip.tropomi.CATALOGUE.var.qa_value.colors                  :   ['red','yellow','green']
+
+!! style:
+!emip.tropomi.CATALOGUE.var.image_number.vmin                :   None
+!
+!! style:
+!emip.tropomi.CATALOGUE.var.tropopause_layer.vmax            :   34.0
+!
+!! style:
+!emip.tropomi.CATALOGUE.var.surface_pressure.units           :  hPa
+!emip.tropomi.CATALOGUE.var.surface_pressure.vmin            :   800.0
+!emip.tropomi.CATALOGUE.var.surface_pressure.vmax            :  1024.0
+!emip.tropomi.CATALOGUE.var.surface_pressure.colors          :  ['brown','orange','yellow','green','darkgreen','cyan']
+
+! style:
+emip.tropomi.CATALOGUE.var.pressure_levels.units           :  hPa
+
+#endfor
+
+
+!-------------------------------------------------
+! end
+!-------------------------------------------------
