@@ -1,0 +1,197 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>utopya module &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utopya.base module" href="python-module-utopya_base.html" />
+    <link rel="prev" title="satx module" href="python-module-satx.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_base.html" title="utopya.base module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python-module-satx.html" title="satx module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" accesskey="U">Python modules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-utopya"></span><div class="section" id="utopya-module">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module<a class="headerlink" href="#utopya-module" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">utopya</span></code> module is the top level access to the various 
+<a class="reference internal" href="#utopya-classes"><span class="std std-ref">UTOPyA classes</span></a> and routines.</p>
+<p>Actual implementations can be found in submodules:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_base.html"><code class="docutils literal notranslate"><span class="pre">utopya.base</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_rc.html"><code class="docutils literal notranslate"><span class="pre">utopya.rc</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_jobscript.html"><code class="docutils literal notranslate"><span class="pre">utopya.jobscript</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_jobtree.html"><code class="docutils literal notranslate"><span class="pre">utopya.jobtree</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_runscript.html"><code class="docutils literal notranslate"><span class="pre">utopya.runscript</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_install.html"><code class="docutils literal notranslate"><span class="pre">utopya_install</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-utopya_tools.html"><code class="docutils literal notranslate"><span class="pre">utopya.tools</span></code> module</a></li>
+</ul>
+</div>
+<div class="section" id="other-modules">
+<h2>Other modules<a class="headerlink" href="#other-modules" title="Permalink to this headline">¶</a></h2>
+<p>Tools are available from other modules.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="python-module-rc.html"><code class="docutils literal notranslate"><span class="pre">rc</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-module-gss.html"><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="utopya-classes">
+<span id="id2"></span><h2>Utopya classes<a class="headerlink" href="#utopya-classes" title="Permalink to this headline">¶</a></h2>
+<p>The UTOPyA python classes could be imported from the 
+<a class="reference internal" href="#utopya-module"><span class="std std-ref">utopya module</span></a>,
+and are defined according to the following hierchy:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaBase</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaRc</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobStep</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobTree</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobIteration</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaInstall</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobTask</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobTaskSubmit</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaRunScript</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScript</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptForeground</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptRedirect</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBackground</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatch</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchTest</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLoadLeveler</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLSF</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a><ul>
+<li><a class="reference internal" href="#other-modules">Other modules</a></li>
+<li><a class="reference internal" href="#utopya-classes">Utopya classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-satx.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">satx</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python-module-utopya_base.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">utopya.base</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python-module-utopya.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_base.html" title="utopya.base module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python-module-satx.html" title="satx module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

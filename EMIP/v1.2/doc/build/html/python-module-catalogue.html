@@ -1,0 +1,256 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>catalogue module &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Documentation" href="documentation.html" />
+    <link rel="prev" title="gss module" href="python-module-gss.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python-module-gss.html" title="gss module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" accesskey="U">Python modules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-catalogue"></span><div class="section" id="catalogue-module">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module<a class="headerlink" href="#catalogue-module" title="Permalink to this headline">¶</a></h1>
+<p>Python module to create html catalogue to browse through a collection of images.</p>
+<div class="section" id="tutorial">
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<p>In this example, a catalogue is build for an archive
+of meteorological images and statistical data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">fig</span><span class="o">/</span><span class="n">world</span><span class="o">-</span><span class="n">pressure</span><span class="o">-</span><span class="nb">map</span><span class="o">.</span><span class="n">png</span>
+          <span class="n">world</span><span class="o">-</span><span class="n">pressure</span><span class="o">-</span><span class="n">time</span><span class="o">.</span><span class="n">png</span>
+          <span class="n">world</span><span class="o">-</span><span class="n">pressure</span><span class="o">-</span><span class="n">stats</span><span class="o">.</span><span class="n">txt</span>
+          <span class="p">:</span>
+</pre></div>
+</div>
+<p>To browse through the images, a catalogue in html format
+should be created. Since the image names consist of 3 parts
+(here seperated by dashes), the catalogue should have 3 levels too.
+The ordering of the levels determines how a user could browse
+through the archive.</p>
+<p>In this example, the order of the levels is:</p>
+<ol class="arabic simple">
+<li><p>the variables (pressure, temperature, humidity)
+presented as a bullet list; each item is a link to a new page;</p></li>
+<li><p>the region (world, europe)
+presented as a row in a table;</p></li>
+<li><p>the image types (map, time series, …)
+presented as a column in the table.</p></li>
+</ol>
+<p>To create a catlogue, first define the main object.
+The first argument describes the image filenames,
+other information is optional:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cata</span> <span class="o">=</span> <span class="n">catalogue</span><span class="o">.</span><span class="n">CatalogueCreator</span><span class="p">(</span> <span class="s1">&#39;&lt;region&gt;-&lt;variable&gt;-&lt;figure&gt;.png&#39;</span><span class="p">,</span>
+                                   <span class="n">imgdir</span><span class="o">=</span><span class="s1">&#39;/data/fig&#39;</span><span class="p">,</span> 
+                                   <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example catalogue&#39;</span><span class="p">,</span>
+                                   <span class="n">longnames</span><span class="o">=</span><span class="p">{</span> <span class="s1">&#39;key&#39;</span> <span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="o">..</span><span class="p">},</span>
+                                   <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>The supplied filename is either a single template:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;&lt;region&gt;-&lt;variable&gt;-&lt;figure&gt;.png&#39;</span>
+</pre></div>
+</div>
+<p>or a list of templates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;&lt;region&gt;-&lt;variable&gt;-&lt;figure&gt;.png&#39;</span><span class="p">,</span><span class="s1">&#39;&lt;region&gt;-all.png&#39;</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Filetypes that are supported are currently:</p>
+<ul>
+<li><p>images: ‘<code class="docutils literal notranslate"><span class="pre">*.png</span></code>’, ‘<code class="docutils literal notranslate"><span class="pre">*.gif</span></code>’, ..</p>
+<p>These will be displayed by the html img tag.</p>
+</li>
+<li><p>text files:  ‘<code class="docutils literal notranslate"><span class="pre">*.txt</span></code>’</p>
+<p>The content of the file is displayed as text.</p>
+</li>
+<li><p>html files: ‘<code class="docutils literal notranslate"><span class="pre">*.html</span></code>’</p>
+<p>A link to the file is displayed.
+This is typically used to create a main page with links to various catalogues.</p>
+</li>
+</ul>
+<p>Then define the levels in the catalogue.
+Each level is defined by 4 variables.</p>
+<ul class="simple">
+<li><p>A ‘<code class="docutils literal notranslate"><span class="pre">name</span></code>’ ; 
+this name is used in the ‘imgname’ supplied above by enclosing it with ‘&lt;..&gt;’</p></li>
+<li><p>The ‘<code class="docutils literal notranslate"><span class="pre">values</span></code>’ are a list with all possible values
+that a level could take.</p></li>
+<li><p>The ‘<code class="docutils literal notranslate"><span class="pre">form</span></code>’ describes how the values in a level are listed
+in the catalogue, e.g. the html tags used to display them.
+Supported forms are :</p>
+<ul>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">ul</span></code>’        : unordered list</p></li>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">table-tr</span></code>’  : row within table, level value is in first column</p></li>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">table-td</span></code>’  : column within table with single row only</p></li>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">tr</span></code>’        : row within table, level value is not displayed</p></li>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">td</span></code>’        : column within table row; should follow ‘<code class="docutils literal notranslate"><span class="pre">table-tr</span></code>’ or ‘<code class="docutils literal notranslate"><span class="pre">tr</span></code>’</p></li>
+</ul>
+</li>
+<li><p>The ‘<code class="docutils literal notranslate"><span class="pre">newpage</span></code>’ is a boolean that should be set to ‘<code class="docutils literal notranslate"><span class="pre">True</span></code>’ to have each 
+item in this level point to a new html page.</p></li>
+</ul>
+<p>Add the levels via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># define the levels in the right order:</span>
+<span class="c1">#              name        values                              form  newpage </span>
+<span class="n">cata</span><span class="o">.</span><span class="n">AddLevel</span><span class="p">(</span> <span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">,</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span><span class="s1">&#39;wind&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="s1">&#39;ul&#39;</span><span class="p">,</span> <span class="kc">True</span>   <span class="p">)</span>
+<span class="n">cata</span><span class="o">.</span><span class="n">AddLevel</span><span class="p">(</span> <span class="s1">&#39;region&#39;</span>  <span class="p">,</span> <span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">,</span><span class="s1">&#39;europe&#39;</span><span class="p">]</span>                <span class="p">,</span> <span class="s1">&#39;tr&#39;</span><span class="p">,</span> <span class="kc">False</span>  <span class="p">)</span>
+<span class="n">cata</span><span class="o">.</span><span class="n">AddLevel</span><span class="p">(</span> <span class="s1">&#39;figure&#39;</span>  <span class="p">,</span> <span class="p">[</span><span class="s1">&#39;map.png&#39;</span><span class="p">,</span><span class="s1">&#39;time.png&#39;</span><span class="p">,</span><span class="s1">&#39;stats.txt&#39;</span><span class="p">],</span> <span class="s1">&#39;td&#39;</span><span class="p">,</span> <span class="kc">False</span>  <span class="p">)</span>
+
+<span class="c1"># optional arguments:</span>
+<span class="c1">#    longnames = { &#39;key&#39; : &#39;value&#39;, ... }  # used for long item names</span>
+</pre></div>
+</div>
+<p>Optionally, define some html templates to fine-tune the formatting of
+the images and/or other data.
+Specify one html template for each value of the final level, 
+(usually a ‘figure’ level as used here),
+or use a filename pattern.
+Include in the template the the special keys:</p>
+<ul class="simple">
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">%(filename)s</span></code>’   to insert the filename;</p></li>
+<li><p>‘<code class="docutils literal notranslate"><span class="pre">%(filetext)s</span></code>’   to insert the content of a text file</p></li>
+</ul>
+<p>Add templates by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cata</span><span class="o">.</span><span class="n">AddTemplate</span><span class="p">(</span> <span class="s1">&#39;map.png&#39;</span> <span class="p">,</span> <span class="s1">&#39;&lt;img src=&quot;</span><span class="si">%(filename)s</span><span class="s1">&quot; width=&quot;400&quot; border=&quot;0&quot;&gt;&#39;</span> <span class="p">)</span>
+<span class="n">cata</span><span class="o">.</span><span class="n">AddTemplate</span><span class="p">(</span> <span class="s1">&#39;time.png&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;img src=&quot;</span><span class="si">%(filename)s</span><span class="s1">&quot; width=&quot;300&quot; border=&quot;0&quot;&gt;&#39;</span> <span class="p">)</span>
+<span class="n">cata</span><span class="o">.</span><span class="n">AddTemplate</span><span class="p">(</span> <span class="s1">&#39;*.txt&#39;</span>   <span class="p">,</span> <span class="s1">&#39;&lt;pre&gt;</span><span class="si">%(filetext)s</span><span class="s1">&lt;/pre&gt;&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Eventually add extra longnames that are used in listings and headers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cata</span><span class="o">.</span><span class="n">AddLongnames</span><span class="p">(</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Finaly create the html pages using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cata</span><span class="o">.</span><span class="n">Create</span><span class="p">(</span> <span class="n">basename</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Multiple archives could be made by defining a different
+level order and/or a different presentation formats</p>
+</div>
+<div class="section" id="command-line-tool">
+<h2>Command line tool<a class="headerlink" href="#command-line-tool" title="Permalink to this headline">¶</a></h2>
+<p>Use the script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalogue</span><span class="o">-</span><span class="n">index</span>
+</pre></div>
+</div>
+<p>to create a new catalogue using a configuration file.
+Provide ‘<code class="docutils literal notranslate"><span class="pre">--help</span></code>’ as argument to see the options and
+how to generate example settings.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module</a><ul>
+<li><a class="reference internal" href="#tutorial">Tutorial</a></li>
+<li><a class="reference internal" href="#command-line-tool">Command line tool</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-gss.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="documentation.html"
+                        title="next chapter">Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python-module-catalogue.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python-module-gss.html" title="gss module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

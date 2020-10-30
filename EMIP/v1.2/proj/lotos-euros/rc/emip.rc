@@ -35,6 +35,7 @@ emip.tasks        :  tropomi
 !SCRATCH                       :  ${HOME}/scratch
 !SCRATCH                       :   /run/media/dirac/Datos/TROPOMI_test
 SCRATCH                       :   /run/media/dirac/Datos/Segunda_Ventana
+!SCRATCH                       : /run/media/dirac/Datos/TROPOMI_2019_february_LOTOS 			
 
 
 
@@ -44,7 +45,7 @@ SCRATCH                       :   /run/media/dirac/Datos/Segunda_Ventana
 
 ! timerange:
 my.timerange.start              :  2019-02-03 00:00
-my.timerange.end                :  2019-02-07 00:00
+my.timerange.end                :  2019-02-06 00:00
 
 
 !----------------------------------------------------------

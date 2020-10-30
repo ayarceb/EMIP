@@ -371,6 +371,7 @@ emip.tropomi.regrid.mapping.dir            :  ${my.scratch}/TROPOMI/NO2/${my.reg
 emip.tropomi.convert-catalogue.dir                   :  ${my.scratch}/TROPOMI/NO2/${my.region}__catalgoue
 ! converted files, absolute path or relative to catalogue:
 emip.tropomi.convert-catalogue.input.filenames       :  /run/media/dirac/Datos/Segunda_Ventana/EMIP/TROPOMI/NO2/${my.region}/%Y/%m/${my.tropomi.product}_*.nc
+!emip.tropomi.convert-catalogue.input.filenames       :  /run/media/dirac/Datos/TROPOMI_2019_february_LOTOS/EMIP/TROPOMI/NO2/${my.region}/%Y/%m/${my.tropomi.product}_*.nc
 !emip.tropomi.convert-catalogue.input.filenames       :/run/media/dirac/Datos/TROPO_2019_febr_LOTOS_2_semanas/EMIP/TROPOMI/NO2/Colombia/2019/01/${my.tropomi.product}_*.nc
 
 ! target directory for catalogue:

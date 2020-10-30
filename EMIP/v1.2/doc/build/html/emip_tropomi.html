@@ -1,0 +1,381 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TROPOMI data processing &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python modules" href="python-modules.html" />
+    <link rel="prev" title="OMI data processing" href="emip_omi.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-modules.html" title="Python modules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="emip_omi.html" title="OMI data processing"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">TROPOMI data processing</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tropomi-data-processing">
+<span id="tropomi-processing"></span><h1>TROPOMI data processing<a class="headerlink" href="#tropomi-data-processing" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the tasks performed for processing OMI data.</p>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>An example configuration could be found in:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../../../rc/emip_omi.rc">rc/emip.rc</a></p></li>
+</ul>
+<p>The examples bellow assume that a task ‘<code class="docutils literal notranslate"><span class="pre">emip.omi</span></code>’ has been
+configured as a list of sub tasks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! initialize:
+emip.tropomi.class        :  emip.EmipTaskList
+emip.tropomi.args         :  &#39;%{rcfile}&#39;
+
+! task list:
+emip.tropomi.tasks        :  download convert catalogue
+</pre></div>
+</div>
+</div>
+<div class="section" id="downloading-original-data-files">
+<h2>Downloading original data files<a class="headerlink" href="#downloading-original-data-files" title="Permalink to this headline">¶</a></h2>
+<p>OMI data is available from the <a class="reference external" href="http://temis.nl/">TEMIS</a> website.
+Files are collected per day in files named:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">temis</span><span class="o">.</span><span class="n">nl</span><span class="o">/</span><span class="n">airpollution</span><span class="o">/</span><span class="n">no2col</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">tropomi</span><span class="o">/</span><span class="mi">2018</span><span class="o">/</span><span class="mi">07</span><span class="o">/</span><span class="n">tropomi_no2_20180728</span><span class="o">.</span><span class="n">tar</span>
+</pre></div>
+</div>
+<p>The EMIP task ‘<code class="docutils literal notranslate"><span class="pre">emip.tropomi.download</span></code>’ could be used to download and unpack
+a series of these files.
+The work is done by by the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaInstall</span></code> class from the <a class="reference internal" href="python-module-utopya.html#module-utopya" title="utopya"><code class="xref py py-mod docutils literal notranslate"><span class="pre">utopya</span></code></a> module;
+the task initalized with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>emip.tropomi.download.class        :  utopya.UtopyaInstall
+emip.tropomi.download.args         :  &#39;%{rcfile}&#39;
+</pre></div>
+</div>
+<p>The class requires rcfile settings that specify the files to be downloaded and
+where to store them.
+The first setting is a list of data sets nicknames that should be download;
+here just a single set of ‘daily’ files is requested:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">sets</span>                <span class="p">:</span>  <span class="n">daily</span>
+</pre></div>
+</div>
+<p>For each data the details should be specified.
+One file per day should be installed; specify the time range and time step with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">timerange</span>   <span class="p">:</span>  <span class="mi">2012</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="n">upto</span> <span class="mi">2012</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="n">by</span> <span class="mi">1</span> <span class="n">day</span>
+</pre></div>
+</div>
+<p>Specify the archive location as an url; this path should not include templates for time values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">arch</span>        <span class="p">:</span>  <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">temis</span><span class="o">.</span><span class="n">nl</span><span class="o">/</span><span class="n">airpollution</span><span class="o">/</span><span class="n">no2col</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">tropomi</span>
+</pre></div>
+</div>
+<p>The filename(s) to be download could include templates for the time
+which are expanded by the <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#datetime.datetime.strftime" title="(in Python v3.7)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datetime.datetime.strftime()</span></code></a> method.
+The extension ‘<code class="docutils literal notranslate"><span class="pre">.tar</span></code>’ will enforce automatic unpacking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">files</span>       <span class="p">:</span>  <span class="o">%</span><span class="n">Y</span><span class="o">/%</span><span class="n">m</span><span class="o">/</span><span class="n">tropomi_</span><span class="o">%</span><span class="n">Y</span><span class="o">%</span><span class="n">m</span><span class="o">%</span><span class="n">d</span><span class="o">.</span><span class="n">tar</span>
+</pre></div>
+</div>
+<p>Specify the target location with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">dir</span>         <span class="p">:</span>  <span class="o">/</span><span class="n">scratch</span><span class="o">/</span><span class="n">TEMIS</span><span class="o">/</span><span class="n">airpollution</span><span class="o">/</span><span class="n">no2col</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">tropomi</span>
+</pre></div>
+</div>
+<p>Eventually enable a flag to show debug messages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">verbose</span>     <span class="p">:</span>  <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="convert-and-select">
+<h2>Convert and select<a class="headerlink" href="#convert-and-select" title="Permalink to this headline">¶</a></h2>
+<p>The ‘<code class="docutils literal notranslate"><span class="pre">emip.tropomi.convert</span></code>’ task creates netCDF files with selected pixels,
+for example only those within some region or cloud free pixels.
+The selection criteria are defined in the settings, and added
+to the ‘<code class="docutils literal notranslate"><span class="pre">history</span></code>’ attribute of the created files to not be forgotten.</p>
+<p>The work is done by the <code class="xref py py-class docutils literal notranslate"><span class="pre">EmipTropomiConvert</span></code> class,
+which is initialized using the settings file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! task initialization:
+emip.tropomi.convert.class                  :  emip_omi.EmipTropomiConvert
+emip.tropomi.convert.args                   :  &#39;%{rcfile}&#39;
+</pre></div>
+</div>
+<p>See the class documentation for the configuration.</p>
+<div class="section" id="pixel-selection">
+<h3>Pixel selection<a class="headerlink" href="#pixel-selection" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">TROPOMI_NC4_File.SelectPixels()</span></code> method is called
+to create a pixel selection mask.
+The selection is done specification of one or more filters.
+First provide a list of filter names:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">filters</span>   <span class="p">:</span>  <span class="n">lons</span> <span class="n">lats</span> <span class="n">valid</span> <span class="n">tcflag</span> <span class="n">albedo</span>
+</pre></div>
+</div>
+<p>Then provide for each filter the details of the input variable,
+the assumed units (safety check!), the type of filter,
+and (depending on the type) other settings that specify the allowed values.
+For example, the following <code class="docutils literal notranslate"><span class="pre">lons</span></code> filter selects a longitude range:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">var</span>                <span class="p">:</span>  <span class="n">Geolocation</span> <span class="n">Fields</span><span class="o">/</span><span class="n">Longitude</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">units</span>              <span class="p">:</span>  <span class="n">deg</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">type</span>               <span class="p">:</span>  <span class="n">minmax</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">minmax</span>             <span class="p">:</span>  <span class="o">-</span><span class="mf">30.0</span> <span class="mf">45.0</span>
+</pre></div>
+</div>
+<p>See the the description of the method for the supported filter types
+and their required settings.</p>
+</div>
+<div class="section" id="variable-specification">
+<h3>Variable specification<a class="headerlink" href="#variable-specification" title="Permalink to this headline">¶</a></h3>
+<p>The converted data is stored in an <code class="xref py py-class docutils literal notranslate"><span class="pre">OmiExtract</span></code> object
+which will take care of writing to a netCDF file.
+The <code class="xref py py-meth docutils literal notranslate"><span class="pre">OmiExtract.AddSelection()</span></code> method is used to process
+the selected pixels, e.g. selecting the variables, apply conversions, etc.</p>
+<p>The first setting that is read is a list with variable names to be
+created in the target file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">vars</span>    <span class="p">:</span>  <span class="n">longitude</span> <span class="n">corner_longitudes</span> \
+                                       <span class="n">latitude</span> <span class="n">corner_latitudes</span> \
+                                       <span class="n">vcd_trop</span>  <span class="o">...</span>
+</pre></div>
+</div>
+<p>For each variable settings should be specified that describe
+how to obtain the values and the target units (for automatic conversion if possible).</p>
+<p>For most variables it is sufficient to provide only the name of the original
+variable from which the data should be read:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="kn">from</span>    <span class="p">:</span>   <span class="n">PRODUCT</span><span class="o">/</span><span class="n">longitude</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">units</span>   <span class="p">:</span>   <span class="n">degrees_east</span>
+</pre></div>
+</div>
+<p>For some variables some special processing needs to be done.
+For these variables a key ‘<code class="docutils literal notranslate"><span class="pre">special</span></code>’ is used which will enable the
+correct code for conversion. For example, the following setting will
+ensure that the variable ‘<code class="docutils literal notranslate"><span class="pre">image_number</span></code>’ will be filled with the scan
+number within the track:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">image_number</span><span class="o">.</span><span class="n">special</span>            <span class="p">:</span>   <span class="n">scan_number</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">image_number</span><span class="o">.</span><span class="n">units</span>              <span class="p">:</span>   <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The special conversions are implemented in the <code class="xref py py-meth docutils literal notranslate"><span class="pre">TropomiExtract.AddSelection()</span></code> method.
+If new variables require special processing, just insert a new ‘<code class="docutils literal notranslate"><span class="pre">special</span></code>’ keyword
+and wait for the method to complain about an unsupported value.</p>
+</div>
+<div class="section" id="output-files">
+<h3>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h3>
+<p>The converted data is written to a file specified by directory
+and filename templates.</p>
+<p>The output directory could include templates for time values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">dir</span>    <span class="p">:</span>  <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">OMI</span><span class="o">-</span><span class="n">selection</span><span class="o">/%</span><span class="n">Y</span><span class="o">/%</span><span class="n">m</span>
+</pre></div>
+</div>
+<p>Also the filenames could include time values,
+and in addition a template ‘<code class="docutils literal notranslate"><span class="pre">%{orbit}</span></code>’ in which the orbit id
+from the OMI file is inserted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">filename</span>    <span class="p">:</span>  <span class="n">OMI</span><span class="o">-</span><span class="n">Aura_NO2_</span><span class="o">%</span><span class="n">Y</span><span class="o">%</span><span class="n">m</span><span class="o">%</span><span class="n">d_</span><span class="o">%</span><span class="p">{</span><span class="n">orbit</span><span class="p">}</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
+<p>Specify global attributes and their value with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attrs</span>  <span class="p">:</span>  <span class="nb">format</span> <span class="n">Conventions</span> <span class="n">author</span> <span class="n">institution</span> <span class="n">email</span>
+
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">format</span>         <span class="p">:</span>  <span class="mf">1.0</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">Conventions</span>    <span class="p">:</span>  <span class="n">CF</span><span class="o">-</span><span class="mf">1.6</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">author</span>         <span class="p">:</span>  <span class="n">Arjo</span> <span class="n">Segers</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">institution</span>    <span class="p">:</span>  <span class="n">MetNorway</span><span class="p">,</span> <span class="n">Oslo</span><span class="p">,</span> <span class="n">Norway</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">email</span>          <span class="p">:</span>  <span class="n">Arjo</span><span class="o">.</span><span class="n">Segers</span><span class="nd">@met</span><span class="o">.</span><span class="n">no</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="regridding">
+<h2>Regridding<a class="headerlink" href="#regridding" title="Permalink to this headline">¶</a></h2>
+<p>The ‘<code class="docutils literal notranslate"><span class="pre">emip.tropomi.regrid</span></code>’ task could be used to resample the
+pixels onto a regular grid.</p>
+<p>The work is done by the <code class="xref py py-class docutils literal notranslate"><span class="pre">EmipOmiRegrid</span></code> class,
+which is initialized using the settings file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>emip.tropomi.regrid.class            :  emip_omi.EmipOmiRegrid
+emip.tropomi.regrid.args             :  &#39;%{rcfile}&#39;
+</pre></div>
+</div>
+<p>Input files are expected to be produced by the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">EmipOmiConvert</span></code> class.
+For each input file, an output file with similar format is created
+which has ‘pixels’ with a footprint equal to a grid cell.
+The regular grid (centers, corners) is saved as the ‘track’.</p>
+<p>The remapping is done by distributing the footprint polygon over the grid cells.
+Each grid cell is therefore filled with a weighed sum of contributions from pixels
+that (partly) overlap the cell:</p>
+<div class="math notranslate nohighlight">
+\[y ~=~ \sum\limits_{i=1}^{npix} w_i x_i\]</div>
+<p>The weights are relative to the area covered by a pixel, thus the more area of a cell
+is covered by a pixel the more weight that pixel has.</p>
+<p>Variables that start with ‘<code class="docutils literal notranslate"><span class="pre">sigma_</span></code>’ are assumed to be error estimates.
+The errors are assumed to be uncorrrelated between pixels, and therefore
+the combined error could be computed as weighted sum over variances:</p>
+<div class="math notranslate nohighlight">
+\[\sigma_y ~=~ \sqrt{ \sum\limits_{i=1}^{npix} w_i\ \sigma_{x,i}^2 }\]</div>
+<p>See the class documentation for detailed configuration settings.</p>
+</div>
+<div class="section" id="catalogues">
+<h2>Catalogues<a class="headerlink" href="#catalogues" title="Permalink to this headline">¶</a></h2>
+<p>The ‘<code class="docutils literal notranslate"><span class="pre">emip.tropomi.catalogue</span></code>’ task could be used to create a catalogue
+of figures extracted from the converted files.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/omi-catalogue.png"><img alt="OMI image catalogue" src="_images/omi-catalogue.png" style="width: 340.5px; height: 344.5px;" /></a>
+<p class="caption"><span class="caption-text"><em>Example of image catalogue produced from converted OMI files.</em></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>The work is done by the <code class="xref py py-class docutils literal notranslate"><span class="pre">EmipOmiCatalogue</span></code> class,
+which is initialized using the settings file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>emip.tropomi.catalogue.class            :  emip_omi.EmipOmiCatalogue
+emip.tropomi.catalogue.args             :  &#39;%{rcfile}&#39;
+</pre></div>
+</div>
+<p>In the settings, specify a time range for which images should be created:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">timerange</span><span class="o">.</span><span class="n">start</span>  <span class="p">:</span>  <span class="mi">2012</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+<span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">timerange</span><span class="o">.</span><span class="n">end</span>    <span class="p">:</span>  <span class="mi">2012</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mi">23</span><span class="p">:</span><span class="mi">59</span>
+</pre></div>
+</div>
+<p>The images as well as an html index are written to a single directory
+specified with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">dir</span>    <span class="p">:</span>  <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">OMI</span><span class="o">-</span><span class="n">selection</span><span class="o">/</span><span class="n">catalgoue</span>
+</pre></div>
+</div>
+<p>The location of the converted OMI files could be specified with
+time templates and a filename filter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>! converted OMI files, absolute path or relative to catalogue:
+emip.tropomi.catalogue.input.filenames        :  ../%Y/%m/OMI-Aura_NO2_*.nc
+</pre></div>
+</div>
+<p>Specify a list of variables to be plotted; usually this is the tropospheric
+vertical column density that is the main product, but also variables might be
+of interest:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">vars</span>                   <span class="p">:</span>  <span class="n">vcd_trop</span>
+</pre></div>
+</div>
+<p>Per variable the maximum value for the color bar could be specified;
+if not defined, the color bar is simply stretched to the maximum value
+present in the data:</p>
+<blockquote>
+<div><p>emip.tropomi.catalogue.var.vcd_trop.vmax      :  20.0</p>
+</div></blockquote>
+<p>Specify the domain of the map, projection is regular longitude/latitude:</p>
+<blockquote>
+<div><p>! map domain (west east south north):
+emip.tropomi.catalogue.domain       :  -30 45 35 75</p>
+</div></blockquote>
+<p>Enable the following flag to re-create existing files,
+by default only non-existing files are created:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">emip</span><span class="o">.</span><span class="n">tropomi</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">renew</span>                  <span class="p">:</span>  <span class="kc">False</span>
+</pre></div>
+</div>
+<p>When finished, the <a class="reference internal" href="python-module-catalogue.html#module-catalogue" title="catalogue"><code class="xref py py-mod docutils literal notranslate"><span class="pre">catalogue</span></code></a> module is used create index pages.
+The url that should be loaded in a browser is shown:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Point</span> <span class="n">your</span> <span class="n">browser</span> <span class="n">to</span> <span class="p">:</span>
+  <span class="n">file</span><span class="p">:</span><span class="o">///</span><span class="n">data</span><span class="o">/</span><span class="n">OMI</span><span class="o">-</span><span class="n">selection</span><span class="o">/</span><span class="n">catalgoue</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">TROPOMI data processing</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#downloading-original-data-files">Downloading original data files</a></li>
+<li><a class="reference internal" href="#convert-and-select">Convert and select</a><ul>
+<li><a class="reference internal" href="#pixel-selection">Pixel selection</a></li>
+<li><a class="reference internal" href="#variable-specification">Variable specification</a></li>
+<li><a class="reference internal" href="#output-files">Output files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regridding">Regridding</a></li>
+<li><a class="reference internal" href="#catalogues">Catalogues</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="emip_omi.html"
+                        title="previous chapter">OMI data processing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python-modules.html"
+                        title="next chapter">Python modules</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/emip_tropomi.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-modules.html" title="Python modules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="emip_omi.html" title="OMI data processing"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">TROPOMI data processing</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

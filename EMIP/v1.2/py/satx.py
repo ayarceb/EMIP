@@ -459,13 +459,15 @@ class SatXFile( utopya.UtopyaBase ) :
             # extract data:
             values    = self.var[varname]['data']
             
-            # masked ?
+            # masked 
             if 'fill_value' in dir(values) :
                 fill_value = values.fill_value                
             else :
                 fill_value = None
             #endif
-            print(fill_value) 
+	    #===Santiago===
+            if varname=='time' and fill_value=='?':
+                fill_value=-2147483647
             # dimension names:
             dims = self.var[varname]['dims']
             
@@ -483,8 +485,10 @@ class SatXFile( utopya.UtopyaBase ) :
             #endif
 
             # create variable:
+            print( 'xxx1 varname = ', varname )
+            print( 'xxx1 fill_value = ', fill_value, type(fill_value) )
             varid = ncid.createVariable( varname, dtype, dims, fill_value=fill_value )
-	     
+	    
             # write data:
             varid[:] = values
             # attributes:		

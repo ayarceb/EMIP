@@ -1,0 +1,224 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gss module &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="catalogue module" href="python-module-catalogue.html" />
+    <link rel="prev" title="rc module" href="python-module-rc.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-catalogue.html" title="catalogue module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python-module-rc.html" title="rc module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" accesskey="U"><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-gss"></span><div class="section" id="gss-module">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">gss</span></code> module<a class="headerlink" href="#gss-module" title="Permalink to this headline">¶</a></h1>
+<p>The gss module provides routines to access various types of
+file systems using a single interface.</p>
+<div class="section" id="usage-as-python-module">
+<h2>Usage as Python module<a class="headerlink" href="#usage-as-python-module" title="Permalink to this headline">¶</a></h2>
+<p>The module is imported using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gss</span>
+</pre></div>
+</div>
+<p>Use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">List()</span></code> routine to list the content of a directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gss</span><span class="o">.</span><span class="n">List</span><span class="p">(</span> <span class="s1">&#39;/data&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, the path specification describes a local file system.
+To list the files on the ECMWF tape archive using the EcAccess tools, use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gss</span><span class="o">.</span><span class="n">List</span><span class="p">(</span> <span class="s1">&#39;ec:ec:/you/data&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>See the the section on <a class="reference internal" href="#filespecs"><span class="std std-ref">File specifications</span></a> 
+for the supported file systems.</p>
+<p>The following operations on files are supported:</p>
+<ul>
+<li><p>List content of path, return list with :py:class:GSS_Element’ objects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gss</span><span class="o">.</span><span class="n">List</span><span class="p">(</span> <span class="s1">&#39;ec:scratch:/you/data/&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Copy file from the local file system to for example the ECMWF tape archive:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gss</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span> <span class="s1">&#39;test.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;ec:ec:/you/data/test.txt&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Copy file from a remote location to the local file system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gss</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span> <span class="s1">&#39;ec:scratch:/you/data/test.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;test.txt&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>See the individual methods for further details.</p>
+</div>
+<div class="section" id="file-specifications">
+<span id="filespecs"></span><h2>File specifications<a class="headerlink" href="#file-specifications" title="Permalink to this headline">¶</a></h2>
+<p>Examples of file specifications:</p>
+<ul>
+<li><p>Standard file system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">file</span><span class="p">[</span><span class="o">&lt;</span><span class="n">options</span><span class="o">&gt;</span><span class="p">]:][</span><span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;/</span><span class="p">]</span><span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Supported options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">umask</span><span class="o">=</span><span class="mi">022</span>    <span class="c1"># permission mask for created files</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">file</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">file</span><span class="o">%</span><span class="n">umask</span><span class="o">=</span><span class="mi">022</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</li>
+<li><p>Remote file systems:</p>
+<blockquote>
+<div><p>&lt;url&gt;</p>
+</div></blockquote>
+<p>where the URL could be:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://some.archive.net/data/file.txt">https://some.archive.net/data/file.txt</a></p>
+</div></blockquote>
+</li>
+<li><p>ECMWF file system accessed via EcAccess tools:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ec</span><span class="p">[</span><span class="o">&lt;</span><span class="n">options</span><span class="o">&gt;</span><span class="p">]:[</span><span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;</span><span class="p">:][</span><span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;/</span><span class="p">][</span><span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Supported domains:</p>
+<ul class="simple">
+<li><p>‘home’       : HOME partition on member state server (default)</p></li>
+<li><p>‘scratch’    : SCRATCH partition on member state server</p></li>
+<li><p>‘ec’         : tape archive</p></li>
+<li><p>‘ectmp’      : temporary tape archive</p></li>
+</ul>
+<p>Supported options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">umask</span><span class="o">=</span><span class="mi">022</span>    <span class="c1"># permission mask for created files and directories</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ec</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>                  <span class="c1"># file on HOME partition</span>
+<span class="n">ec</span><span class="p">:</span><span class="n">home</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>             <span class="c1"># &quot;    &quot;  &quot;    &quot;</span>
+<span class="n">ec</span><span class="p">:</span><span class="n">scratch</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>          <span class="c1"># file on SCRATCH partition</span>
+<span class="n">ec</span><span class="p">:</span><span class="n">ec</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>               <span class="c1"># file on tape archive</span>
+<span class="n">ec</span><span class="p">:</span><span class="n">ectmp</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>            <span class="c1"># file on temporary tape archive</span>
+<span class="n">ec</span><span class="p">:</span><span class="n">ec</span><span class="p">:</span><span class="o">/</span><span class="n">TMP</span><span class="o">/</span><span class="n">you</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>      <span class="c1"># &quot;    &quot;  &quot;         &quot;    &quot;</span>
+<span class="n">ec</span><span class="o">%</span><span class="n">umas</span><span class="o">=</span><span class="mi">022</span><span class="p">:</span><span class="n">ec</span><span class="p">:</span><span class="n">data</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>      <span class="c1"># file on tape archive, read permissions</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a><ul>
+<li><a class="reference internal" href="#usage-as-python-module">Usage as Python module</a></li>
+<li><a class="reference internal" href="#file-specifications">File specifications</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-rc.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">rc</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python-module-catalogue.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python-module-gss.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-catalogue.html" title="catalogue module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python-module-rc.html" title="rc module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" ><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

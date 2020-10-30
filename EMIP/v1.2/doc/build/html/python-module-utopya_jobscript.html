@@ -1,0 +1,245 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>utopya.jobscript module &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utopya.jobtree module" href="python-module-utopya_jobtree.html" />
+    <link rel="prev" title="utopya.rc module" href="python-module-utopya_rc.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_jobtree.html" title="utopya.jobtree module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_rc.html" title="utopya.rc module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" accesskey="U"><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">utopya.jobscript</span></code> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-utopya_jobscript"></span><div class="section" id="utopya-jobscript-module">
+<h1><code class="docutils literal notranslate"><span class="pre">utopya.jobscript</span></code> module<a class="headerlink" href="#utopya-jobscript-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>A job script is a (usually) small text file to do something important.
+A simple example is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+
+<span class="c1"># do something:</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;boe!&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Such a script could be run in the foreground, in which case the user has
+to wait for the job to be finished before control is regained.
+Standard output (“boe!”) and eventually standard error are printed directly
+and can be watched by the user.</p>
+<p>When the script is run in background, control is given back to the user
+while the script remains running. The standard output and error should
+be redirected to files.</p>
+<p>Alternatively, the script could be submitted to a batch system.
+In this case, options to identify the job, to specify destination of
+standard output and error, and to request resoures (memory, cpu’s),
+could be inserted in the header of the script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /usr/bin/env python</span>
+
+<span class="c1">#BSUB -J myjob</span>
+<span class="c1">#BSUB -oo myjob.out</span>
+<span class="c1">#BSUB -eo myjob.err</span>
+
+<span class="c1"># do something:</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;boe!&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>The classes provided by this module facilitate creation of job scripts
+for which the run destination (foreground, background,  batch system)
+is flexible.</p>
+</div>
+<div class="section" id="jobscripts-to-run-in-foreground">
+<h2>Jobscripts to run in foreground<a class="headerlink" href="#jobscripts-to-run-in-foreground" title="Permalink to this headline">¶</a></h2>
+<p>To run a job in the foreground, use one of the following classes:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptForeground</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptRedirect</span></code>, which redirects standard output (and error) to files.</p></li>
+</ul>
+</div>
+<div class="section" id="jobscripts-to-run-in-background">
+<h2>Jobscripts to run in background<a class="headerlink" href="#jobscripts-to-run-in-background" title="Permalink to this headline">¶</a></h2>
+<p>To run in background, use the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBackground</span></code> class.</p>
+</div>
+<div class="section" id="jobscripts-to-be-submitted-to-a-batch-system">
+<h2>Jobscripts to be submitted to a batch system<a class="headerlink" href="#jobscripts-to-be-submitted-to-a-batch-system" title="Permalink to this headline">¶</a></h2>
+<p>High performace clusters with a high number of processors
+and many users logged in at the same time are always equiped
+with a batch system to handle jobs.
+Batch jobs are submitted to a queue, and the batch system
+empties the queue by assigning jobs to first available processors.</p>
+<p>Special commands are required to submit jobs to the queue,
+list the currently submitted and running jobs, and eventually
+remove jobs from the queue.</p>
+<p>Batch job files typically have special comments in the top
+to tell the batch system the destination queue, the name of
+output/error files to be used, required memory and maximum
+run time, etc.</p>
+<p>Which batch system is available usually depends on the machine vendor
+and/or administrator.
+Each type of batch system has its own job handling command
+and format for the batch options in the top of the job file.
+For each type, a seperate class needs to be defined to handle
+creation and submission.
+A base class <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatch</span></code> is provided from
+which batch type specific class could be derived;
+see it’s documentation for the methods to be re-defined.</p>
+<p>The following specific batch systems are already supported:</p>
+<ul class="simple">
+<li><p>For LSF, which uses the ‘bsub’ command to submit, use the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLSF</span></code> class.</p></li>
+<li><p>For SLURM, which uses the ‘sbatch’ command to submit, use the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchSlurm</span></code> class.</p></li>
+<li><p>For PBS, which uses the ‘qsub’ command to submit, use the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchPBS</span></code> class.</p></li>
+<li><p>For the IBM LoadLeveler queue, use the <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLoadLeveler</span></code> class.</p></li>
+</ul>
+<p>If queue systems are fully occupied, testing creation of job files could suffer
+from long waiting times. To avoid wasting of precious development time, the
+special <code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchTest</span></code> class is provided.
+This will create jobs using fake job options, and run the script in foreground
+while redirecting standard output and error.</p>
+</div>
+<div class="section" id="class-hierarchy">
+<h2>Class hierarchy<a class="headerlink" href="#class-hierarchy" title="Permalink to this headline">¶</a></h2>
+<p>The classes provided by this module have been derived with the following hierchy:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaBase</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScript</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptForeground</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptRedirect</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBackground</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatch</span></code></p>
+<ul>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchTest</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLSF</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchSlurm</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchPBS</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UtopyaJobScriptBatchLoadLeveler</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">utopya.jobscript</span></code> module</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#jobscripts-to-run-in-foreground">Jobscripts to run in foreground</a></li>
+<li><a class="reference internal" href="#jobscripts-to-run-in-background">Jobscripts to run in background</a></li>
+<li><a class="reference internal" href="#jobscripts-to-be-submitted-to-a-batch-system">Jobscripts to be submitted to a batch system</a></li>
+<li><a class="reference internal" href="#class-hierarchy">Class hierarchy</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-utopya_rc.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">utopya.rc</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python-module-utopya_jobtree.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">utopya.jobtree</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python-module-utopya_jobscript.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_jobtree.html" title="utopya.jobtree module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_rc.html" title="utopya.rc module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" ><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">utopya.jobscript</span></code> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

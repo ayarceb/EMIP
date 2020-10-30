@@ -1,0 +1,547 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc module &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="gss module" href="python-module-gss.html" />
+    <link rel="prev" title="utopya.tools module" href="python-module-utopya_tools.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-gss.html" title="gss module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_tools.html" title="utopya.tools module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" accesskey="U"><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">rc</span></code> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-rc"></span><div class="section" id="rc-module">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">rc</span></code> module<a class="headerlink" href="#rc-module" title="Permalink to this headline">¶</a></h1>
+<p>Python module to read settings from a specially formatted text file.
+This text file will be denoted as a ‘resource’ file,
+or simpy ‘rcfile’.</p>
+<div class="section" id="format-of-rc-files">
+<span id="rc-formatting"></span><h2>Format of rc files<a class="headerlink" href="#format-of-rc-files" title="Permalink to this headline">¶</a></h2>
+<p>A ‘rc’ file is a text file with key/value pairs seperated by a double colon (‘:’).
+This is the format also used for X-Resources, from which the
+name ‘resource’ or ‘rc’ file has been adapted.
+An example of the format is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my</span><span class="o">.</span><span class="n">flag</span>    <span class="p">:</span>  <span class="n">T</span>
+<span class="n">my</span><span class="o">.</span><span class="n">answer</span>  <span class="p">:</span>  <span class="mi">42</span>
+</pre></div>
+</div>
+<p>The following functionality is supported.</p>
+<div class="section" id="line-continuation">
+<h3>Line continuation<a class="headerlink" href="#line-continuation" title="Permalink to this headline">¶</a></h3>
+<p>Long values could be continued at the next line after a ‘\’ as last character:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my</span><span class="o">.</span><span class="n">longlist</span> <span class="p">:</span> <span class="n">value1</span> <span class="n">value2</span> \
+              <span class="n">value3</span> <span class="n">value4</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="annotation">
+<h3>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h3>
+<p>The following formatting rules are useful to make the settings
+readible and understandable.</p>
+<ul>
+<li><p>Empty lines are ignored.</p></li>
+<li><p>Comment lines starting with a ‘!’ as first character are ignored.</p></li>
+<li><p>Comment starting with ‘!’ is stripped from the values.
+To have a value including exclamation marks, use an escaped version ‘\!’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>my.value      :   -999    ! just an integer value
+my.message    :   This value has 64 characters \! Count if you don&#39;t believe it ...
+</pre></div>
+</div>
+<p>Note that currently the remainder of the value is not scanned for comment.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="variable-substitution">
+<h3>Variable substitution<a class="headerlink" href="#variable-substitution" title="Permalink to this headline">¶</a></h3>
+<p>Both the keys and the values might contain variable expressions,
+that are substituted by actual values on initialization.
+In case a variable substitution could not be resolved an error message will be raised.</p>
+<p>Variables are enclosed by ‘${‘ and ‘}’, e.g. ‘${HOME}’.</p>
+<p>The following variable subsitutions are supported:</p>
+<ul>
+<li><p>Substitution of operating system environment variables:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>input.dir :   ${HOME}/Documents/data
+</pre></div>
+</div>
+</li>
+<li><p>Apart form the operating system environment variables,
+extra user defined variables might be passed on initialization
+using the optional ‘env’ dictionairy;
+see the initializaton of the <code class="xref py py-class docutils literal notranslate"><span class="pre">RcFile</span></code> class.</p></li>
+<li><p>Substitution of values assigned to other keys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>grid                 :  glb300x200
+input.${grid}.path   :  /data/input/${grid}
+</pre></div>
+</div>
+<p>The substitutions are performed in a loop until nothing
+has to be substituted anymore, or some substitutions could
+not be applied at all; for the later an error is raised.
+Values to be substituted could therefore be set before and
+after they are used.</p>
+<p>Note that if a key has the same name as an environment variable,
+the new value will be assigned to the key instead of the value
+retrieved from the environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HOME</span>      <span class="p">:</span>  <span class="o">/</span><span class="n">some</span><span class="o">/</span><span class="n">other</span><span class="o">/</span><span class="nb">dir</span><span class="o">/</span>
+</pre></div>
+</div>
+</li>
+<li><p>Special variables:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${pid}     # evaluates to the current process id; 
+           # useful for names of log files etc
+${script}  # evaluates to the base name of the calling script, 
+           # thus without .py etc
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Note that it also possible to define other enclosing marks than ‘${‘ and ‘}’
+using the optional ‘marks’ argument on initialization.</p>
+</div>
+<div class="section" id="experessions">
+<h3>Experessions<a class="headerlink" href="#experessions" title="Permalink to this headline">¶</a></h3>
+<p>Evaluation of expressions is applied to all values enclosed by ‘$((..))’ .
+The enclosed value should be a valid Python expression after all variable
+subsitutions have been applied:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ntask       :  4
+nthread     :  2
+ncore       :  $(( ${ntask} * ${nthread} ))
+</pre></div>
+</div>
+</div>
+<div class="section" id="including-other-settings">
+<h3>Including other settings<a class="headerlink" href="#including-other-settings" title="Permalink to this headline">¶</a></h3>
+<p>Include the key/value pairs from another file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include path/to/some-other.rc</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="import-settings">
+<h3>Import settings<a class="headerlink" href="#import-settings" title="Permalink to this headline">¶</a></h3>
+<p>To import specfic settings from another file, use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#from path/to/some-other.rc import key1 key2 ...</span>
+<span class="c1">#from path/to/some-other.rc import key as newkey</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="conditional-expressions">
+<h3>Conditional expressions<a class="headerlink" href="#conditional-expressions" title="Permalink to this headline">¶</a></h3>
+<p>Case specific settings could be defined using a conditional expression:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#if ${my.number} == 1</span>
+<span class="n">message</span>    <span class="p">:</span> <span class="n">Welcome</span>
+<span class="c1">#elif ${my.number} == 2</span>
+<span class="n">message</span>    <span class="p">:</span> <span class="n">Welcome</span> <span class="n">back</span>
+<span class="c1">#else</span>
+<span class="n">message</span>    <span class="p">:</span> <span class="n">Whatever</span> <span class="o">...</span>
+<span class="c1">#endif</span>
+</pre></div>
+</div>
+<p>The condition should be a valid python expressions that evaluates to a boolean; 
+variable substitutions are performed before evaluation. Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${my.number} == 4
+&quot;${my.name}&quot; == &quot;UTOPyA&quot;
+</pre></div>
+</div>
+<p>Keep it simple! Very complicated and nested if-statements might not be
+resolved correctly, and are in any case not easy to understand for other users.</p>
+</div>
+<div class="section" id="error-messages">
+<h3>Error messages<a class="headerlink" href="#error-messages" title="Permalink to this headline">¶</a></h3>
+<p>In case an undesired condition is found, it is possible to raise have
+an error message raised using the special ‘#error’ mark.
+Everything behind the ‘#error’ mark is displayed as an error message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#if ${my.number} &lt; 0</span>
+<span class="c1">#error No settings provided for number : ${my.number}</span>
+<span class="c1">#endif</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loop-evaluation">
+<h3>Loop evaluation<a class="headerlink" href="#loop-evaluation" title="Permalink to this headline">¶</a></h3>
+<p>A for-loop could be used to quickly set a number of similar settings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#for XX in AA BB CC :</span>
+<span class="n">setting</span><span class="o">.</span><span class="n">XX</span>   <span class="p">:</span>  <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">value</span> <span class="k">for</span> <span class="n">XX</span><span class="o">.</span>
+<span class="c1">#endfor</span>
+</pre></div>
+</div>
+<p>This will expand to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setting</span><span class="o">.</span><span class="n">AA</span>   <span class="p">:</span>  <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">value</span> <span class="k">for</span> <span class="n">AA</span><span class="o">.</span>
+<span class="n">setting</span><span class="o">.</span><span class="n">BB</span>   <span class="p">:</span>  <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">value</span> <span class="k">for</span> <span class="n">BB</span><span class="o">.</span>
+<span class="n">setting</span><span class="o">.</span><span class="n">CC</span>   <span class="p">:</span>  <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">value</span> <span class="k">for</span> <span class="n">CC</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="usage-as-python-module">
+<h2>Usage as Python module<a class="headerlink" href="#usage-as-python-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="initialization-of-rcfile-object">
+<h3>Initialization of rcfile object<a class="headerlink" href="#initialization-of-rcfile-object" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">RcFile</span></code> class is used to read, process, and store all
+key/value pairs from a rcfile.
+Initialize an object of this class by passing the name of the rcfile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">RcFile</span><span class="p">(</span> <span class="s1">&#39;settings.rc&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>All substitutions described under <a class="reference internal" href="#rc-formatting"><span class="std std-ref">formatting</span></a>
+are applied on reading, unless the optional ‘raw’ flag is enabled:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">RcFile</span><span class="p">(</span> <span class="s1">&#39;settings.rc&#39;</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>See the initializaton of the <code class="xref py py-class docutils literal notranslate"><span class="pre">RcFile</span></code> class 
+for details on this and other optional arguments.</p>
+</div>
+<div class="section" id="rcfile-keys">
+<h3>Rcfile keys<a class="headerlink" href="#rcfile-keys" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.has_key()</span></code> method is provided to test if a key is defined:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">rcf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;my.flag&#39;</span><span class="p">)</span> <span class="p">:</span>
+  <span class="nb">print</span> <span class="s1">&#39;value of my flag is : &#39;</span><span class="p">,</span> <span class="n">rcf</span><span class="p">[</span><span class="s1">&#39;my.flag&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Extract a list with all keys using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.keys()</span></code> method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-values">
+<h3>Get values<a class="headerlink" href="#get-values" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.get()</span></code> method is provided to extract values.</p>
+<p>By default, the ‘get’ function returns the value as a str type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">rcf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;my.value&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A second argument is the name of the python type to which
+the value is converted to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="n">rcf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;my.flag&#39;</span><span class="p">,</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the return type should be a ‘bool’, the result is:</p>
+<ul class="simple">
+<li><p>True for values : ‘True’ , ‘T’, ‘yes’, or ‘1’ ,</p></li>
+<li><p>False for values  : ‘False’, ‘F’, ‘no’ , or ‘0’ .</p></li>
+</ul>
+<p>For other values that should be converted to a ‘bool’ an error is raised.</p>
+<p>A default value could be returned if the key is not found,
+without raising an exception:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span> <span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;v1.2&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Print a debug message to the logging system for each extracted key:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span> <span class="s1">&#39;my.flag&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-new-key-value-pairs">
+<h3>Add new key/value pairs<a class="headerlink" href="#add-new-key-value-pairs" title="Permalink to this headline">¶</a></h3>
+<p>Use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.add()</span></code> method to add a new value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="s1">&#39;my.iter&#39;</span><span class="p">,</span> <span class="mi">2</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>This function is useful to pass changed settings to other methods, 
+or to write modified rcfiles using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.WriteFile()</span></code> method.
+Eventually specify a comment line; if the content of the object is
+written to a file, this comment will be written before the key/value pair:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="s1">&#39;my.iter&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;iteration number for restart&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="replace-values">
+<h3>Replace values<a class="headerlink" href="#replace-values" title="Permalink to this headline">¶</a></h3>
+<p>Assign a new value to an existing key with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.replace()</span></code> method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;my.flag&#39;</span><span class="p">,</span> <span class="kc">True</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="substitute-values">
+<h3>Substitute values<a class="headerlink" href="#substitute-values" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.substitute()</span></code> method could be used to replace
+keys by rcfile values in a character line.
+For example, suppose the rcfile stored had content:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span>       <span class="p">:</span> <span class="n">Model</span>
+<span class="n">version</span>    <span class="p">:</span> <span class="n">v1</span><span class="o">.</span><span class="mi">2</span>
+</pre></div>
+</div>
+<p>A character line with the right templates could now be evaluated
+into a version with values inserted at the right place:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">line</span> <span class="o">=</span> <span class="n">rcf</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span> <span class="s1">&#39;This is version %</span><span class="si">{version}</span><span class="s1"> of %</span><span class="si">{name}</span><span class="s1">.&#39;</span> <span class="p">)</span>
+<span class="nb">print</span> <span class="n">line</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">version</span> <span class="n">v1</span><span class="o">.</span><span class="mi">2</span> <span class="n">of</span> <span class="n">Model</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="write-content">
+<h3>Write content<a class="headerlink" href="#write-content" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">RcFile.WriteFile()</span></code> method could be used to write the content
+of the object to a new file, with all variables expanded and included files included:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcf</span><span class="o">.</span><span class="n">WriteFile</span><span class="p">(</span> <span class="s1">&#39;newfile.rc&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="usage-via-script">
+<h2>Usage via script<a class="headerlink" href="#usage-via-script" title="Permalink to this headline">¶</a></h2>
+<p>Use the ‘rcget’ script to extract values from a rcfile in non-python application.</p>
+<p>Example of usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcget</span> <span class="s1">&#39;mytest.rc&#39;</span> <span class="s1">&#39;version&#39;</span>
+</pre></div>
+</div>
+<p>To see all options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcget</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="history">
+<h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><div class="line-block">
+<div class="line">1998? Arjo Segers, TU Delft</div>
+<div class="line-block">
+<div class="line">Initial implementation of configuration options in ‘rc’ file style.</div>
+<div class="line">Read routines in Fortran.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2001? Arjo Segers, KNMI</div>
+<div class="line-block">
+<div class="line">Implementation of shell script to read settings from within a shell script.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2008? Andy Jacobson, NOAA</div>
+<div class="line-block">
+<div class="line">Translation to python of original shell script ‘go_readrc’ .</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2009-06 Wouter Peters, WUR</div>
+<div class="line-block">
+<div class="line">Support substitution of previously defined variables.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2009-06 Arjo Segers, TNO</div>
+<div class="line-block">
+<div class="line">Support include files.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2009-09 Arjo Segers, TNO</div>
+<div class="line-block">
+<div class="line">Re-coded into class.</div>
+<div class="line">Implemented substitution loop.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2009-11 Arjo Segers, JRC</div>
+<div class="line-block">
+<div class="line">Added main program to run this file as a shell script.</div>
+<div class="line">Added replace and substitute routines.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2010-03 Arjo Segers, JRC</div>
+<div class="line-block">
+<div class="line">Support simple if-statements.</div>
+<div class="line">Support comment in values.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2010-07 Wouter Peters, WUR</div>
+<div class="line-block">
+<div class="line">Downgraded to work for python 2.4.3 too.</div>
+<div class="line">Added read/write routines for backwards compatibility.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2010-07-27 Arjo Segers, JRC</div>
+<div class="line-block">
+<div class="line">Maintain list with rcfile names and line numbers to be displayed
+with error messages to identify where problematic lines are found.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2010-07-28 Andy Jacobson, NOAA</div>
+<div class="line-block">
+<div class="line">Add second dictionary of key,linetrace values to help track the 
+provenance of #included keys (to debug multiple key instances).</div>
+<div class="line">Identify duplicate keys by checking on different source lines
+instead of checking if the values are different.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2010-10 Arjo Segers, JRC</div>
+<div class="line-block">
+<div class="line">Restructured processing using classes for source lines
+and rcfile values, and resolve using recursive calls.</div>
+<div class="line">Added evaluation of expression enclosed by $((.)) .</div>
+<div class="line">Added for-loop.</div>
+<div class="line">Removed main program and stored this in the auxilary script ‘rcget’ .</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2015-04 Arjo Segers, TNO</div>
+<div class="line-block">
+<div class="line">Formatted helptext for Sphinx.</div>
+</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">2015-05 Arjo Segers, TNO</div>
+<div class="line-block">
+<div class="line">Load included files relative to including file if necessary.</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">rc</span></code> module</a><ul>
+<li><a class="reference internal" href="#format-of-rc-files">Format of rc files</a><ul>
+<li><a class="reference internal" href="#line-continuation">Line continuation</a></li>
+<li><a class="reference internal" href="#annotation">Annotation</a></li>
+<li><a class="reference internal" href="#variable-substitution">Variable substitution</a></li>
+<li><a class="reference internal" href="#experessions">Experessions</a></li>
+<li><a class="reference internal" href="#including-other-settings">Including other settings</a></li>
+<li><a class="reference internal" href="#import-settings">Import settings</a></li>
+<li><a class="reference internal" href="#conditional-expressions">Conditional expressions</a></li>
+<li><a class="reference internal" href="#error-messages">Error messages</a></li>
+<li><a class="reference internal" href="#loop-evaluation">Loop evaluation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-as-python-module">Usage as Python module</a><ul>
+<li><a class="reference internal" href="#initialization-of-rcfile-object">Initialization of rcfile object</a></li>
+<li><a class="reference internal" href="#rcfile-keys">Rcfile keys</a></li>
+<li><a class="reference internal" href="#get-values">Get values</a></li>
+<li><a class="reference internal" href="#add-new-key-value-pairs">Add new key/value pairs</a></li>
+<li><a class="reference internal" href="#replace-values">Replace values</a></li>
+<li><a class="reference internal" href="#substitute-values">Substitute values</a></li>
+<li><a class="reference internal" href="#write-content">Write content</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-via-script">Usage via script</a></li>
+<li><a class="reference internal" href="#history">History</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-utopya_tools.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">utopya.tools</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python-module-gss.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">gss</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python-module-rc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-gss.html" title="gss module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python-module-utopya_tools.html" title="utopya.tools module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="python-modules.html" >Python modules</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="python-module-utopya.html" ><code class="docutils literal notranslate"><span class="pre">utopya</span></code> module</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">rc</span></code> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

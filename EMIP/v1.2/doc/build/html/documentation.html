@@ -1,0 +1,328 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation &#8212; EMIP trunk documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="catalogue module" href="python-module-catalogue.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-catalogue.html" title="catalogue module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Documentation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="documentation">
+<span id="id1"></span><h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="generation">
+<h2>Generation<a class="headerlink" href="#generation" title="Permalink to this headline">¶</a></h2>
+<p>The documentation of EMIP that you are reading right now is generated
+from EMIP source files.
+To (re)generate it, run in the main directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">docu</span>
+</pre></div>
+</div>
+<p>The documentation files are formatted for use with ‘Sphinx’; see:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://sphinx-doc.org/index.html">Sphinx homepage</a></p></li>
+</ul>
+<p>The ‘Sphink’ python package should be available to be able to (re)generate the documentation.
+If not available on your system yet, see below for installation instructions.</p>
+</div>
+<div class="section" id="source-files">
+<h2>Source files<a class="headerlink" href="#source-files" title="Permalink to this headline">¶</a></h2>
+<p>The main files of the documentation are located in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">doc</span><span class="o">/</span><span class="n">source</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Parts of the documentation are included in the various Python modules and scripts.
+The documentation is configured in such a way that these are automatically incorporated.</p>
+<p>The source tree of the documentation files is:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../../source/index.rst">index.rst</a></p>
+<ul>
+<li><p><a class="reference external" href="../../source/documentation.rst">documentation.rst</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="installation-of-sphinx">
+<h2>Installation of Sphinx<a class="headerlink" href="#installation-of-sphinx" title="Permalink to this headline">¶</a></h2>
+<p>To check if Sphinx is already installed, try to run the quick-start script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sphinx</span><span class="o">-</span><span class="n">quickstart</span> <span class="o">--</span><span class="n">version</span>
+
+<span class="n">sphinx</span><span class="o">-</span><span class="n">quickstart</span> <span class="mf">1.8</span><span class="o">.</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>If not available yet, try to install using one of the following methods.</p>
+<div class="section" id="install-sphinx">
+<h3>Install Sphinx<a class="headerlink" href="#install-sphinx" title="Permalink to this headline">¶</a></h3>
+<p>Try if it is possible to download and install Sphinx using
+one of the standard installation commands.</p>
+<ul>
+<li><p>For an <a class="reference external" href="https://www.anaconda.com/">Anaconda</a> distribution, try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">anaconda</span> <span class="n">sphinx</span>
+</pre></div>
+</div>
+</li>
+<li><p>For other distributions, try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">sphinx</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="build-spinx-from-source">
+<h3>Build Spinx from source<a class="headerlink" href="#build-spinx-from-source" title="Permalink to this headline">¶</a></h3>
+<p>Download the latest version from the
+<a class="reference external" href="http://sphinx-doc.org/index.html">Sphinx homepage</a>,
+for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sphinx</span><span class="o">-</span><span class="mf">1.2</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>To let the package be installed at a local destination,
+define the following environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PYTHON_PREFIX</span><span class="o">=</span><span class="s2">&quot;$</span><span class="si">{HOME}</span><span class="s2">/opt/Python-2.7.6&quot;</span>
+</pre></div>
+</div>
+<p>Build and install in the user-defined location using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Sphinx</span><span class="o">-</span><span class="mf">1.2</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+<p>Extend the search path with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PATH</span><span class="o">=</span><span class="s2">&quot;$</span><span class="si">{PYTHON_PREFIX}</span><span class="s2">/bin:$</span><span class="si">{PATH}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The source of the documentation is located in (subdirectories of):</p>
+<blockquote>
+<div><p>./doc/</p>
+</div></blockquote>
+<p>In this directory, the Sphinx quick start command has been called:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sphinx</span><span class="o">-</span><span class="n">quickstart</span>
+</pre></div>
+</div>
+<p>The following settings were entered
+(lines marked with <code class="docutils literal notranslate"><span class="pre">&lt;--</span></code> are non-default):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Welcome to the Sphinx 1.2 quickstart utility.
+&gt; Root path for the documentation [.]:
+&gt; Separate source and build directories (y/N) [n]: y                          &lt;--
+&gt; Name prefix for templates and static dir [_]:
+&gt; Project name: EMIP                                                          &lt;--
+&gt; Author name(s): Arjo Segers                                                 &lt;--
+&gt; Project version: trunk                                                      &lt;--
+&gt; Project release [trunk]:
+&gt; Source file suffix [.rst]:
+&gt; Name of your master document (without suffix) [index]:
+&gt; Do you want to use the epub builder (y/N) [n]:
+&gt; autodoc: automatically insert docstrings from modules (y/N) [n]: y          &lt;--
+&gt; doctest: automatically test code snippets in doctest blocks (y/N) [n]:
+&gt; intersphinx: link between Sphinx documentation of different projects (y/N) [n]:
+&gt; todo: write &quot;todo&quot; entries that can be shown or hidden on build (y/N) [n]:
+&gt; coverage: checks for documentation coverage (y/N) [n]:
+&gt; pngmath: include math, rendered as PNG images (y/N) [n]:
+&gt; mathjax: include math, rendered in the browser by MathJax (y/N) [n]: y      &lt;--
+&gt; ifconfig: conditional inclusion of content based on config values (y/N) [n]:
+&gt; viewcode: include links to the source code of documented Python objects (y/N) [n]:
+&gt; Create Makefile? (Y/n) [y]:
+&gt; Create Windows command file? (Y/n) [y]: n                                   &lt;--
+</pre></div>
+</div>
+<p>The following entities have been created now:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> directory to hold the documenation source files;
+initially the following files are created:</p>
+<ul>
+<li><p><a class="reference external" href="../../source/conf.py">conf.py</a> : configuration file;</p></li>
+<li><p><a class="reference external" href="../../source/index.rst">index.rst</a> : source of the main page of the documentation;</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">build</span></code> directory to hold the generated documenation;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Makefile</span></code> : make commands.</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">./doc/source/conf.py</span></code> file created in this way,
+the following changes were made manually:</p>
+<ul>
+<li><p>The location of the python modules was added to the search path:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># If extensions (or modules to document with autodoc) are in another directory,</span>
+<span class="c1"># add these directories to sys.path here. If the directory is relative to the</span>
+<span class="c1"># documentation root, use os.path.abspath to make it absolute, like shown here.</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">))</span> <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Added default options for <a class="reference external" href="http://sphinx-doc.org/ext/autodoc.html">Autodoc</a> entries,
+these are used to create documentation out of Python modules:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autodoc_default_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;show-inheritance&#39;</span><span class="p">,</span><span class="s1">&#39;members&#39;</span><span class="p">]</span>
+<span class="n">autodoc_member_order</span>  <span class="o">=</span> <span class="s1">&#39;bysource&#39;</span>
+<span class="n">intersphinx_mapping</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;python&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;http://docs.python.org/2.7&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>The html theme was changed for a less default layout;
+this requires that the ‘<code class="docutils literal notranslate"><span class="pre">html_sidebars</span></code>’ section is commented:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">html_theme</span> <span class="o">=</span> <span class="s1">&#39;nature&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>The initial documentation could be created using:</p>
+<blockquote>
+<div><p>(cd doc; make html)</p>
+</div></blockquote>
+</div>
+<div class="section" id="how-to-add-a-new-module-to-the-documentation">
+<h2>How to add a new module to the documentation?<a class="headerlink" href="#how-to-add-a-new-module-to-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Example taken from introduction of the ‘emip_tropomi’ module.</p>
+<ul>
+<li><p>Create new module file based on template:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span>  <span class="n">py</span><span class="o">/</span><span class="n">empi_omi</span><span class="o">.</span><span class="n">py</span>  <span class="n">py</span><span class="o">/</span><span class="n">emip_tropomi</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Replace names from the template (“OMI”) by the new names (“TROPOMI”).</p>
+</li>
+<li><p>Create a documentation file specific for the new module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span><span class="o">/</span><span class="n">source</span><span class="o">/</span><span class="n">python</span><span class="o">-</span><span class="n">module</span><span class="o">-</span><span class="n">emip_tropomi</span><span class="o">.</span><span class="n">rst</span>
+</pre></div>
+</div>
+<p>which only refers to the documentation included in the module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">automodule</span><span class="p">::</span> <span class="n">emip_tropomi</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add a reference to the new module in the <a class="reference internal" href="python-modules.html#modules-and-classes"><span class="std std-ref">Python modules</span></a> page
+in the file <a class="reference external" href="../../source/python-modules.rst">python-modules.rst</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">toctree</span><span class="p">::</span>
+   <span class="p">:</span><span class="n">maxdepth</span><span class="p">:</span> <span class="mi">1</span>
+
+   <span class="n">python</span><span class="o">-</span><span class="n">module</span><span class="o">-</span><span class="n">emip_omi</span>
+   <span class="n">python</span><span class="o">-</span><span class="n">module</span><span class="o">-</span><span class="n">emip_tropomi</span>              <span class="o">&lt;---</span>
+   <span class="p">:</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add a reference to the module documentation to the top-level
+table-of-content in <a class="reference external" href="../../source/index.rst">index.rst</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">toctree</span><span class="p">::</span>
+   <span class="p">:</span><span class="n">maxdepth</span><span class="p">:</span> <span class="mi">2</span>
+
+   <span class="n">tutorial</span>
+   <span class="n">emip_omi</span>
+   <span class="n">emip_tropomi</span>                            <span class="o">&lt;---</span>
+   <span class="n">python</span><span class="o">-</span><span class="n">modules</span>
+   <span class="n">documentation</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Documentation</a><ul>
+<li><a class="reference internal" href="#generation">Generation</a></li>
+<li><a class="reference internal" href="#source-files">Source files</a></li>
+<li><a class="reference internal" href="#installation-of-sphinx">Installation of Sphinx</a><ul>
+<li><a class="reference internal" href="#install-sphinx">Install Sphinx</a></li>
+<li><a class="reference internal" href="#build-spinx-from-source">Build Spinx from source</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#how-to-add-a-new-module-to-the-documentation">How to add a new module to the documentation?</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python-module-catalogue.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">catalogue</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/documentation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="python-module-catalogue.html" title="catalogue module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EMIP trunk documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Documentation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Arjo Segers.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
